@@ -459,30 +459,90 @@ namespace PRoConEvents
 
             //Tableconfig Tweaks for friendly weapon names
             this.m_lstTableconfig = new List<string>();
-            this.m_lstTableconfig.Add("RPG-7{RPG}");
+			this.m_lstTableconfig.Add("870MCS{870,870MCS}");
+			this.m_lstTableconfig.Add("AEK-971{AEK,AEK971,AEK-971}");
+			this.m_lstTableconfig.Add("AKS-74u{AKSU,AKS-74,AKSU-74,AKS-74U}");
+			this.m_lstTableconfig.Add("AN-94 Abakan{ABAKAN,AN94,AN-94}");
+			this.m_lstTableconfig.Add("AS Val{ASVAL,AS-VAL,AS VAL}");
+			this.m_lstTableconfig.Add("DAO-12{DAO12,DAO,DAO-12}");
+			this.m_lstTableconfig.Add("death{DEATH}");
+			this.m_lstTableconfig.Add("Defib{DEFIBRILLATOR,DEFIB,PADDLE,PADDLES}");
+			this.m_lstTableconfig.Add("F2000{F2000}");
+			this.m_lstTableconfig.Add("FAMAS{FAMAS}");
+			this.m_lstTableconfig.Add("FGM-148{JAVELIN,FGM148,FGM-148}");
+			this.m_lstTableconfig.Add("FIM92{STINGER,FIM92,FIM-92}");
+			this.m_lstTableconfig.Add("Glock18{GLOCK,GLOCK18,GLOCK-18}");
+			this.m_lstTableconfig.Add("HK53{HK53,HK-53,G53,G-53,HK-G53}");
+			this.m_lstTableconfig.Add("jackhammer{JACKHAMMER,MK3A1,MK3}");
+			this.m_lstTableconfig.Add("JNG90{JNG-90,JNG90,JNG}");
+			this.m_lstTableconfig.Add("L96{L-96,L96}");
+			this.m_lstTableconfig.Add("LSAT{LSAT}");
+			this.m_lstTableconfig.Add("M416{M-416,M416}");
+			this.m_lstTableconfig.Add("M417{M-417,M417}");
+			this.m_lstTableconfig.Add("M1014{M-1014,1014,M1014}");
+			this.m_lstTableconfig.Add("M15 AT Mine{M15,M15 MINE,AT MINE,ATMINE,ATM,M15-ATM}");
+			this.m_lstTableconfig.Add("M16A4{M-16,M16,M16A3,M16-A3,M16A4,M16-A4}");
+			this.m_lstTableconfig.Add("M1911{1911,M1911}");
+			this.m_lstTableconfig.Add("M240{M-240,M240}");
+			this.m_lstTableconfig.Add("M249{M-249,M249,SAW}");
+			this.m_lstTableconfig.Add("M26Mass{M26,M-26,MASS,M26MASS}");
+			this.m_lstTableconfig.Add("M27IAR{M27,M-27,M27IAR}");
+			this.m_lstTableconfig.Add("M320{M-320,GRENADE LAUNCHER,M320}");
+			this.m_lstTableconfig.Add("M39{M-39,M39}");
+			this.m_lstTableconfig.Add("M40A5{M40,M-40,M40A5}");
+			this.m_lstTableconfig.Add("M4A1{M4,M-4,M4A1}");
+			this.m_lstTableconfig.Add("M60{M-60,M60}");
+			this.m_lstTableconfig.Add("M67{HANDGRENADE,GRENADE,M67,M-67}");
+			this.m_lstTableconfig.Add("M9{M-9,M9}");
+			this.m_lstTableconfig.Add("M93R{M93,M93R}");
+			this.m_lstTableconfig.Add("Medkit{MEDKIT}");
+			this.m_lstTableconfig.Add("MG36{MG-36,MG36}");
+			this.m_lstTableconfig.Add("Mk11{MK-11,MK11}");
+			this.m_lstTableconfig.Add("Model98B{M98,M98B,MODEL98,MODEL-98,MODEL98B,MODEL-98B}");
+			this.m_lstTableconfig.Add("MP7{MP-7,MP7}");
+			this.m_lstTableconfig.Add("Pecheneg{PKP-PECHENEG,PKP,PECHENEG}");
+			this.m_lstTableconfig.Add("PP-19{PP19,PP-19}");
+			this.m_lstTableconfig.Add("PP-2000{PP2000,PP-2000}");
+			this.m_lstTableconfig.Add("QBB-95{QBB,QBB95,QBB-95}");
+			this.m_lstTableconfig.Add("QBU-88{QBU,QBU88,QBU-88}");
+			this.m_lstTableconfig.Add("QBZ-95{QBZ,QBZ95,QBZ-95}");
+			this.m_lstTableconfig.Add("Repair Tool{REPAIRTOOL,TOOL,TORCH,BLOWTORCH}");
+			this.m_lstTableconfig.Add("RoadKill{ROADKILL}");
+			this.m_lstTableconfig.Add("RPG-7{RPG,RPG7,RPG7V2,RPG-7V2}");
+			this.m_lstTableconfig.Add("RPK-74M{RPK,RPK74,RPK-74,RPK74M,RPK-74M}");
             this.m_lstTableconfig.Add("Weapons/SCAR-H/SCAR-H{SCAR,SCAR-H,SCARH}");
+			this.m_lstTableconfig.Add("SCAR-L{SCARL,SCAR-L}");
+			this.m_lstTableconfig.Add("SG 553 LB{SG553,SG-553,SG-553LB}");
+			this.m_lstTableconfig.Add("Siaga20k{SAIGA,SAIGA20K,SIAGA,SIAGA20K}");
+			this.m_lstTableconfig.Add("SKS{SKS}");
+			this.m_lstTableconfig.Add("SMAW{SMAW}");
+			this.m_lstTableconfig.Add("SPAS-12{SPAS12,SPAS,SPAS-12}");
+			this.m_lstTableconfig.Add("Suicide{SUICIDE}");
+			this.m_lstTableconfig.Add("SV98{SV-98,SV98}");
+			this.m_lstTableconfig.Add("SVD{SVD,DRAGUNOV}");
+			this.m_lstTableconfig.Add("Steyr AUG{STEYR,AUGA3,AUG-A3,AUG}");
+			this.m_lstTableconfig.Add("Taurus .44{TAURUS,.44MAGNUM,TAURUS.44,MAGNUM,.44}");
+			this.m_lstTableconfig.Add("Type88{TYPE88,TYPE-88}");
             this.m_lstTableconfig.Add("USAS-12{USAS12,USAS}");
-            this.m_lstTableconfig.Add("M27IAR{M27}");
-            this.m_lstTableconfig.Add("M16A4{M16,M16A3}");
-            this.m_lstTableconfig.Add("AEK-971{AEK971,AEK}");
-            this.m_lstTableconfig.Add("Weapons/A91/A91{A91,A-91}");
-            this.m_lstTableconfig.Add("Weapons/AK74M/AK74{AK74,AK74M,AK74-M}");
-            this.m_lstTableconfig.Add("Weapons/G36C/G36C{G36C,G36}");
-            this.m_lstTableconfig.Add("Weapons/G3A3/G3A3{G3A3,G3}");
-            this.m_lstTableconfig.Add("Weapons/Gadgets/C4/C4{C4,C-4}");
-            this.m_lstTableconfig.Add("Weapons/Gadgets/Claymore/Claymore{CLAYMORE,CLAY,LANDMINE}");
-            this.m_lstTableconfig.Add("Weapons/KH2002/KH2002{KH2002}");
-            this.m_lstTableconfig.Add("Weapons/Knife/Knife{KNIFE,MESSER}");
-            this.m_lstTableconfig.Add("Weapons/M416/M416{M416,M-416}");
-            this.m_lstTableconfig.Add("Weapons/MagpulPDR/MagpulPDR{MagpulPDR,PDR}");
-            this.m_lstTableconfig.Add("Weapons/MP412Rex/MP412REX{MP412REX,REX,MP412}");
-            this.m_lstTableconfig.Add("Weapons/MP443/MP443{MP443}");
-            this.m_lstTableconfig.Add("Taurus .44{.44,TAURUS,TAURUS.44}");
-            this.m_lstTableconfig.Add("Weapons/P90/P90{P90}");
-            this.m_lstTableconfig.Add("Weapons/Sa18IGLA/Sa18IGLA{Sa18IGLA,Sa18,IGLA}");
-            this.m_lstTableconfig.Add("Weapons/UMP45/UMP45{UMP,UMP-45,UMP45}");
-            this.m_lstTableconfig.Add("Weapons/XP1_L85A2/L85A2{L85A2,L85A,L85}");
-            this.m_lstTableconfig.Add("Glock18{GLOCK}");
+			this.m_lstTableconfig.Add("Weapons/A91/A91{A91,A-91}");
+			this.m_lstTableconfig.Add("Weapons/AK74M/AK74{AK74,AK-74,AKM,AK-74M,AK74M}");
+			this.m_lstTableconfig.Add("Weapons/G36C/G36C{G36,G36C,G-36,G-36C}");
+			this.m_lstTableconfig.Add("Weapons/G3A3/G3A3{G3,G-3,G3A3,G3-A3}");
+			this.m_lstTableconfig.Add("Weapons/Gadgets/C4/C4{C4,C-4}");
+			this.m_lstTableconfig.Add("Weapons/Gadgets/Claymore/Claymore{CLAYMORE,LANDMINE,APMINE,AP-MINE,APM,M18,M-18,M18-CLAYMORE}");
+			this.m_lstTableconfig.Add("Weapons/KH2002/KH2002{KH2002,KH-2002}");
+			this.m_lstTableconfig.Add("Weapons/Knife/Knife{KNIFE,MELEE}");
+			this.m_lstTableconfig.Add("Weapons/MagpulPDR/MagpulPDR{PDW-R,PDWR,PDR,PDW}");
+			this.m_lstTableconfig.Add("Weapons/MP412Rex/MP412REX{MP412REX,REX,MP-412,MP412}");
+			this.m_lstTableconfig.Add("Weapons/MP443/MP443{MP-443,MP443,GRACH}");
+			this.m_lstTableconfig.Add("Weapons/P90/P90{P-90,P90}");
+			this.m_lstTableconfig.Add("Weapons/Sa18IGLA/Sa18IGLA{SA18,SA-18,IGLA,SA18IGLA,SA18-IGLA,SA-18IGLA}");
+			this.m_lstTableconfig.Add("Weapons/UMP45/UMP45{UMP45,UMP-45,UMP}");
+			this.m_lstTableconfig.Add("Weapons/XP1_L85A2/L85A2{L85,L85A2,L-85,L-85A2,L85-A2}");
+			this.m_lstTableconfig.Add("Weapons/XP2_ACR/ACR{ACWR,ACW-R,ACR,AC-R}");
+			this.m_lstTableconfig.Add("Weapons/XP2_L86/L86{L86,L86A2,L-86,L-86A2,L86-A2}");
+			this.m_lstTableconfig.Add("Weapons/XP2_MP5K/MP5K{MP5,MP5K,M5K,MP-5,MP-5K,M5-K}");
+			this.m_lstTableconfig.Add("Weapons/XP2_MTAR/MTAR{MTAR,MTAR21,MTAR-21}");
 
             //ServerInfo Event fix
             this.dtLastServerInfoEvent = DateTime.Now;
@@ -4304,7 +4364,7 @@ Multigame Support<br>
                             INNER JOIN " + this.tbl_server + @" ts ON ts.ServerID = tsp.ServerID
                             WHERE ts.ServerGroup = @ServerGroup AND tw.WeaponID = @WeaponID
 							GROUP BY tsp.PlayerID
-							ORDER BY SUM(`Kills`)` DESC, SUM(`Headshots`) DESC
+							ORDER BY SUM(`Kills`) DESC, SUM(`Headshots`) DESC
 							LIMIT 10";
                 }
                 else
@@ -5426,7 +5486,7 @@ Multigame Support<br>
                                 //Score and Tickettable
                                 SQLTable = @"CREATE TABLE IF NOT EXISTS `" + this.tbl_teamscores + @"` (
                                               `ServerID` smallint(5) unsigned NOT NULL,
-                                              `TeamID` smallint(5) DEFAULT NULL,
+                                              `TeamID` smallint(5) unsigned NOT NULL,
                                               `Score` int(11) DEFAULT NULL,
                                               `WinningScore` int(11) DEFAULT NULL,
                                               PRIMARY KEY (`ServerID`,`TeamID` )
