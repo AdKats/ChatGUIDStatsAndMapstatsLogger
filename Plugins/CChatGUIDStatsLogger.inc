@@ -3491,7 +3491,16 @@ Multigame Support<br>
                                             OdbcCom.Parameters.AddWithValue("@Killstreak" + i, this.StatsTracker[cpiPlayer.SoldierName].Killstreak);
                                             OdbcCom.Parameters.AddWithValue("@Deathstreak" + i, this.StatsTracker[cpiPlayer.SoldierName].Deathstreak);
                                             OdbcCom.Parameters.AddWithValue("@Suicide" + i, this.StatsTracker[cpiPlayer.SoldierName].Suicides);
-                                            OdbcCom.Parameters.AddWithValue("@IP_aton" + i, this.StatsTracker[cpiPlayer.SoldierName].IP);
+
+                                            // Check if string is empty or null. If it is then send a 0.0.0.0 instead for ip address
+                                            if (string.IsNullOrEmpty(this.StatsTracker[cpiPlayer.SoldierName].IP.Trim()))
+                                            {
+                                                OdbcCom.Parameters.AddWithValue("@IP_aton" + i, "0.0.0.0");
+                                            }
+                                            else
+                                            {
+                                                OdbcCom.Parameters.AddWithValue("@IP_aton" + i, this.StatsTracker[cpiPlayer.SoldierName].IP.Trim());
+                                            }
                                         }
                                         else
                                         {
