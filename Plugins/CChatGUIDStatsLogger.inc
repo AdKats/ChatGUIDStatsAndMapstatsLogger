@@ -574,7 +574,7 @@ namespace PRoConEvents
 
         public string GetPluginVersion()
         {
-            return "1.0.0.2";
+            return "1.0.0.3";
         }
 
         public string GetPluginAuthor()
@@ -5983,7 +5983,7 @@ Multigame Support<br>
                             string[] arrStrings = dicValue.Split(',');
                             if (this.m_dicKeywords.ContainsKey(dicKey))
                             {
-                                //Prüfen
+                                //PrÃ¼fen
                                 this.m_dicKeywords[dicKey].AddRange(arrStrings);
                                 /*
                                 foreach (string entry in this.m_dicKeywords[dicKey])
