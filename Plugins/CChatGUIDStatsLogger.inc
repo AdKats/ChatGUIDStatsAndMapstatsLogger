@@ -3806,7 +3806,7 @@ Multigame Support<br>
                     {
                         if (this.m_enOverallRanking == enumBoolYesNo.Yes)
                         {
-                            SQL = @"SELECT tpd.SoldierName, SUM(tps.Score) AS Score, SUM(tps.Kills) AS Kills, SUM(tps.Deaths) AS Deaths, SUM(tps.Suicide) AS Suicide, SUM(tps.TKs) AS TKs, tpr.rankScore AS rank, (SELECT SUM(tss.CountPlayers) FROM " + this.tbl_server_stats + @" tss INNER JOIN " + this.tbl_server + @" ts ON tss.ServerID = ts.ServerID AND ServerGroup = @ServerGroup GROUP BY ts.ServerGroup ) AS allrank , SUM(tps.Playtime) AS Playtime, SUM(tps.Headshots) AS Headshots, 
+                            SQL = @"SELECT tpd.SoldierName, SUM(tps.Score) AS Score, SUM(tps.Kills) AS Kills, SUM(tps.Deaths) AS Deaths, SUM(tps.Suicide) AS Suicide, SUM(tps.TKs) AS TKs, tpr.rankScore AS RankScore, (SELECT SUM(tss.CountPlayers) FROM " + this.tbl_server_stats + @" tss INNER JOIN " + this.tbl_server + @" ts ON tss.ServerID = ts.ServerID AND ServerGroup = @ServerGroup GROUP BY ts.ServerGroup ) AS allrank , SUM(tps.Playtime) AS Playtime, SUM(tps.Headshots) AS Headshots, 
                                     SUM(tps.Rounds) AS Rounds, MAX(tps.Killstreak) AS Killstreak, MAX(tps.Deathstreak) AS Deathstreak   
                                     FROM " + this.tbl_playerdata + @" tpd
                                     INNER JOIN " + this.tbl_playerrank + @" tpr ON tpd.PlayerID = tpr.PlayerID AND tpr.ServerGroup = @ServerGroup 
@@ -3817,7 +3817,7 @@ Multigame Support<br>
                         }
                         else
                         {
-                            SQL = @"SELECT tpd.SoldierName AS SoldierName, tps.Score AS Score, tps.Kills AS Kills, tps.Deaths AS Deaths, tps.Suicide AS Suicide, tps.TKs AS TKs, tps.rankScore AS rank, (SELECT tss.CountPlayers FROM " + this.tbl_server_stats + @" tss WHERE ServerID = @ServerID ) AS allrank ,
+                            SQL = @"SELECT tpd.SoldierName AS SoldierName, tps.Score AS Score, tps.Kills AS Kills, tps.Deaths AS Deaths, tps.Suicide AS Suicide, tps.TKs AS TKs, tps.rankScore AS RankScore, (SELECT tss.CountPlayers FROM " + this.tbl_server_stats + @" tss WHERE ServerID = @ServerID ) AS allrank ,
                                     tps.Playtime AS Playtime, tps.Headshots AS Headshots, tps.Rounds AS Rounds, tps.Killstreak AS Killstreak, tps.Deathstreak AS Deathstreak
                                     FROM " + this.tbl_playerdata + @" tpd
                                     INNER JOIN " + this.tbl_server_player + @" tsp ON tsp.PlayerID = tpd.PlayerID
@@ -3829,7 +3829,7 @@ Multigame Support<br>
                     {
                         if (this.m_enOverallRanking == enumBoolYesNo.Yes)
                         {
-                            SQL = @"SELECT tpd.SoldierName, SUM(tps.Score) AS Score, SUM(tps.Kills) AS Kills, SUM(tps.Deaths) AS Deaths, SUM(tps.Suicide) AS Suicide, SUM(tps.TKs) AS TKs, tpr.rankKills AS rank, (SELECT SUM(tss.CountPlayers) FROM " + this.tbl_server_stats + @" tss INNER JOIN " + this.tbl_server + @" ts ON tss.ServerID = ts.ServerID AND ServerGroup = @ServerGroup GROUP BY ts.ServerGroup ) AS allrank , SUM(tps.Playtime) AS Playtime, SUM(tps.Headshots) AS Headshots, 
+                            SQL = @"SELECT tpd.SoldierName, SUM(tps.Score) AS Score, SUM(tps.Kills) AS Kills, SUM(tps.Deaths) AS Deaths, SUM(tps.Suicide) AS Suicide, SUM(tps.TKs) AS TKs, tpr.rankKills AS RankScore, (SELECT SUM(tss.CountPlayers) FROM " + this.tbl_server_stats + @" tss INNER JOIN " + this.tbl_server + @" ts ON tss.ServerID = ts.ServerID AND ServerGroup = @ServerGroup GROUP BY ts.ServerGroup ) AS allrank , SUM(tps.Playtime) AS Playtime, SUM(tps.Headshots) AS Headshots, 
                                     SUM(tps.Rounds) AS Rounds, MAX(tps.Killstreak) AS Killstreak, MAX(tps.Deathstreak) AS Deathstreak   
                                     FROM " + this.tbl_playerdata + @" tpd
                                     INNER JOIN " + this.tbl_playerrank + @" tpr ON tpd.PlayerID = tpr.PlayerID AND tpr.ServerGroup = @ServerGroup 
@@ -3840,7 +3840,7 @@ Multigame Support<br>
                         }
                         else
                         {
-                            SQL = @"SELECT tpd.SoldierName AS SoldierName, tps.Score AS Score, tps.Kills AS Kills, tps.Deaths AS Deaths, tps.Suicide AS Suicide, tps.TKs AS TKs, tps.rankKills AS rank, (SELECT tss.CountPlayers FROM " + this.tbl_server_stats + @" tss WHERE ServerID = @ServerID ) AS allrank ,
+                            SQL = @"SELECT tpd.SoldierName AS SoldierName, tps.Score AS Score, tps.Kills AS Kills, tps.Deaths AS Deaths, tps.Suicide AS Suicide, tps.TKs AS TKs, tps.rankKills AS RankScore, (SELECT tss.CountPlayers FROM " + this.tbl_server_stats + @" tss WHERE ServerID = @ServerID ) AS allrank ,
                                     tps.Playtime AS Playtime, tps.Headshots AS Headshots, tps.Rounds AS Rounds, tps.Killstreak AS Killstreak, tps.Deathstreak AS Deathstreak
                                     FROM " + this.tbl_playerdata + @" tpd
                                     INNER JOIN " + this.tbl_server_player + @" tsp ON tsp.PlayerID = tpd.PlayerID
@@ -3877,7 +3877,7 @@ Multigame Support<br>
                                     result = this.ListReplace(result, "%playerDeaths%", row["Deaths"].ToString());
                                     result = this.ListReplace(result, "%playerSuicide%", row["Suicide"].ToString());
                                     result = this.ListReplace(result, "%playerTKs%", row["TKs"].ToString());
-                                    result = this.ListReplace(result, "%playerRank%", row["rank"].ToString());
+                                    result = this.ListReplace(result, "%playerRank%", row["RankScore"].ToString());
                                     result = this.ListReplace(result, "%allRanks%", row["allrank"].ToString());
                                     result = this.ListReplace(result, "%playerHeadshots%", row["Headshots"].ToString());
                                     result = this.ListReplace(result, "%rounds%", row["Rounds"].ToString());
@@ -3949,7 +3949,7 @@ Multigame Support<br>
                 {
                     if (this.m_enOverallRanking == enumBoolYesNo.Yes)
                     {
-                        SQL = @"SELECT tpd.SoldierName, SUM(tps.Score) AS Score, SUM(tps.Kills) AS Kills, SUM(tps.Deaths) AS Deaths, SUM(tps.Suicide) AS Suicide, SUM(tps.TKs) AS TKs, tpr.rankScore AS rank, (SELECT SUM(tss.CountPlayers) FROM " + this.tbl_server_stats + @" tss INNER JOIN " + this.tbl_server + @" ts ON tss.ServerID = ts.ServerID AND ServerGroup = @ServerGroup GROUP BY ts.ServerGroup ) AS allrank , SUM(tps.Playtime) AS Playtime, SUM(tps.Headshots) AS Headshots, 
+                        SQL = @"SELECT tpd.SoldierName, SUM(tps.Score) AS Score, SUM(tps.Kills) AS Kills, SUM(tps.Deaths) AS Deaths, SUM(tps.Suicide) AS Suicide, SUM(tps.TKs) AS TKs, tpr.rankScore AS RankScore, (SELECT SUM(tss.CountPlayers) FROM " + this.tbl_server_stats + @" tss INNER JOIN " + this.tbl_server + @" ts ON tss.ServerID = ts.ServerID AND ServerGroup = @ServerGroup GROUP BY ts.ServerGroup ) AS allrank , SUM(tps.Playtime) AS Playtime, SUM(tps.Headshots) AS Headshots, 
                                 SUM(tps.Rounds) AS Rounds, MAX(tps.Killstreak) AS Killstreak, MAX(tps.Deathstreak) AS Deathstreak   
                                 FROM " + this.tbl_playerdata + @" tpd
                                 INNER JOIN " + this.tbl_playerrank + @" tpr ON tpd.PlayerID = tpr.PlayerID AND tpr.ServerGroup = @ServerGroup 
@@ -3960,7 +3960,7 @@ Multigame Support<br>
                     }
                     else
                     {
-                        SQL = @"SELECT tpd.SoldierName AS SoldierName, tps.Score AS Score, tps.Kills AS Kills, tps.Deaths AS Deaths, tps.Suicide AS Suicide, tps.TKs AS TKs, tps.rankScore AS rank, (SELECT tss.CountPlayers FROM " + this.tbl_server_stats + @" tss WHERE ServerID = @ServerID ) AS allrank ,
+                        SQL = @"SELECT tpd.SoldierName AS SoldierName, tps.Score AS Score, tps.Kills AS Kills, tps.Deaths AS Deaths, tps.Suicide AS Suicide, tps.TKs AS TKs, tps.rankScore AS RankScore, (SELECT tss.CountPlayers FROM " + this.tbl_server_stats + @" tss WHERE ServerID = @ServerID ) AS allrank ,
                                 tps.Playtime AS Playtime, tps.Headshots AS Headshots, tps.Rounds AS Rounds, tps.Killstreak AS Killstreak, tps.Deathstreak AS Deathstreak
                                 FROM " + this.tbl_playerdata + @" tpd
                                 INNER JOIN " + this.tbl_server_player + @" tsp ON tsp.PlayerID = tpd.PlayerID
@@ -3972,7 +3972,7 @@ Multigame Support<br>
                 {
                     if (this.m_enOverallRanking == enumBoolYesNo.Yes)
                     {
-                        SQL = @"SELECT tpd.SoldierName, SUM(tps.Score) AS Score, SUM(tps.Kills) AS Kills, SUM(tps.Deaths) AS Deaths, SUM(tps.Suicide) AS Suicide, SUM(tps.TKs) AS TKs, tpr.rankKills AS rank, (SELECT SUM(tss.CountPlayers) FROM " + this.tbl_server_stats + @" tss INNER JOIN " + this.tbl_server + @" ts ON tss.ServerID = ts.ServerID AND ServerGroup = @ServerGroup GROUP BY ts.ServerGroup ) AS allrank , SUM(tps.Playtime) AS Playtime, SUM(tps.Headshots) AS Headshots, 
+                        SQL = @"SELECT tpd.SoldierName, SUM(tps.Score) AS Score, SUM(tps.Kills) AS Kills, SUM(tps.Deaths) AS Deaths, SUM(tps.Suicide) AS Suicide, SUM(tps.TKs) AS TKs, tpr.rankKills AS RankScore, (SELECT SUM(tss.CountPlayers) FROM " + this.tbl_server_stats + @" tss INNER JOIN " + this.tbl_server + @" ts ON tss.ServerID = ts.ServerID AND ServerGroup = @ServerGroup GROUP BY ts.ServerGroup ) AS allrank , SUM(tps.Playtime) AS Playtime, SUM(tps.Headshots) AS Headshots, 
                                 SUM(tps.Rounds) AS Rounds, MAX(tps.Killstreak) AS Killstreak, MAX(tps.Deathstreak) AS Deathstreak   
                                 FROM " + this.tbl_playerdata + @" tpd
                                 INNER JOIN " + this.tbl_playerrank + @" tpr ON tpd.PlayerID = tpr.PlayerID AND tpr.ServerGroup = @ServerGroup 
@@ -3983,7 +3983,7 @@ Multigame Support<br>
                     }
                     else
                     {
-                        SQL = @"SELECT tpd.SoldierName AS SoldierName, tps.Score AS Score, tps.Kills AS Kills, tps.Deaths AS Deaths, tps.Suicide AS Suicide, tps.TKs AS TKs, tps.rankKills AS rank, (SELECT tss.CountPlayers FROM " + this.tbl_server_stats + @" tss WHERE ServerID = @ServerID ) AS allrank ,
+                        SQL = @"SELECT tpd.SoldierName AS SoldierName, tps.Score AS Score, tps.Kills AS Kills, tps.Deaths AS Deaths, tps.Suicide AS Suicide, tps.TKs AS TKs, tps.rankKills AS RankScore, (SELECT tss.CountPlayers FROM " + this.tbl_server_stats + @" tss WHERE ServerID = @ServerID ) AS allrank ,
                                 tps.Playtime AS Playtime, tps.Headshots AS Headshots, tps.Rounds AS Rounds, tps.Killstreak AS Killstreak, tps.Deathstreak AS Deathstreak
                                 FROM " + this.tbl_playerdata + @" tpd
                                 INNER JOIN " + this.tbl_server_player + @" tsp ON tsp.PlayerID = tpd.PlayerID
@@ -4018,7 +4018,7 @@ Multigame Support<br>
                                 result = this.ListReplace(result, "%playerDeaths%", row["Deaths"].ToString());
                                 result = this.ListReplace(result, "%playerSuicide%", row["Suicide"].ToString());
                                 result = this.ListReplace(result, "%playerTKs%", row["TKs"].ToString());
-                                result = this.ListReplace(result, "%playerRank%", row["rank"].ToString());
+                                result = this.ListReplace(result, "%playerRank%", row["RankScore"].ToString());
                                 result = this.ListReplace(result, "%allRanks%", row["allrank"].ToString());
                                 result = this.ListReplace(result, "%playerHeadshots%", row["Headshots"].ToString());
                                 result = this.ListReplace(result, "%rounds%", row["Rounds"].ToString());
@@ -4206,8 +4206,8 @@ Multigame Support<br>
             {
                 if (this.m_enOverallRanking == enumBoolYesNo.Yes)
                 {
-                    SQL = @"SELECT `Kills`, `Headshots`, `Deaths`, rank, (SELECT COUNT(DISTINCT PlayerID) FROM " + this.tbl_server_player + @" tsp INNER JOIN " + this.tbl_server + @" ts  ON ts.ServerID = tsp.ServerID AND ts.ServerGroup = @ServerGroup) AS allrank
-                            FROM (SELECT sub.PlayerID, (@num := @num + 1) AS rank, `Kills`, `Headshots`, `Deaths`
+                    SQL = @"SELECT `Kills`, `Headshots`, `Deaths`, ScoreRank, (SELECT COUNT(DISTINCT PlayerID) FROM " + this.tbl_server_player + @" tsp INNER JOIN " + this.tbl_server + @" ts  ON ts.ServerID = tsp.ServerID AND ts.ServerGroup = @ServerGroup) AS allrank
+                            FROM (SELECT sub.PlayerID, (@num := @num + 1) AS ScoreRank, `Kills`, `Headshots`, `Deaths`
                                  FROM
                                  (SELECT tsp.PlayerID, SUM(`Kills`) AS `Kills`, SUM(`Headshots`) AS `Headshots`, SUM(`Deaths`) AS `Deaths`
                                  FROM " + this.tbl_weapons_stats + @" tw
@@ -4226,10 +4226,10 @@ Multigame Support<br>
                             Headshots,
                             Deaths,
                             (SELECT 
-                                    rank
+                                    ScoreRank
                                 FROM
                                     (SELECT 
-                                        @rownum:=@rownum + 1 AS rank, sub.PlayerID
+                                        @rownum:=@rownum + 1 AS ScoreRank, sub.PlayerID
                                     FROM
                                         (SELECT @rownum:=0) r, (SELECT 
                                         tsp.PlayerID
@@ -4242,7 +4242,7 @@ Multigame Support<br>
                                     ORDER BY tw.Kills DESC , tw.Headshots DESC) sub) sub2
                                 WHERE
                                     PlayerID = tpd.PlayerID
-                                LIMIT 1) AS rank,
+                                LIMIT 1) AS ScoreRank,
                             (SELECT 
                                     COUNT(*)
                                 FROM
@@ -4638,7 +4638,7 @@ Multigame Support<br>
                     if (this.m_enOverallRanking == enumBoolYesNo.Yes)
                     {
                         //Ranking by Score overall Server
-                        SQL_SELECT = SQL_SELECT + @"(SELECT SUM(tss.CountPlayers) FROM " + this.tbl_server_stats + @" tss INNER JOIN " + this.tbl_server + @" ts ON tss.ServerID = ts.ServerID AND ServerGroup = @ServerGroup GROUP BY ts.ServerGroup ) AS allrank, tpr.rankScore AS rank ";
+                        SQL_SELECT = SQL_SELECT + @"(SELECT SUM(tss.CountPlayers) FROM " + this.tbl_server_stats + @" tss INNER JOIN " + this.tbl_server + @" ts ON tss.ServerID = ts.ServerID AND ServerGroup = @ServerGroup GROUP BY ts.ServerGroup ) AS allrank, tpr.rankScore AS ScoreRank ";
 
                         SQL_JOINS = SQL_JOINS + @" INNER JOIN " + this.tbl_server + @" ts2 USING(ServerID) 
                                                    INNER JOIN " + this.tbl_playerrank + @" tpr USING(PlayerID)";
@@ -4650,7 +4650,7 @@ Multigame Support<br>
                     else
                     {
                         //Ranking by Score specfic Server
-                        SQL_SELECT = SQL_SELECT + @"(SELECT tss.CountPlayers FROM " + this.tbl_server_stats + @" tss WHERE ServerID = @ServerID ) AS allrank, tps.rankScore AS rank ";
+                        SQL_SELECT = SQL_SELECT + @"(SELECT tss.CountPlayers FROM " + this.tbl_server_stats + @" tss WHERE ServerID = @ServerID ) AS allrank, tps.rankScore AS ScoreRank ";
 
                         SQL_JOINS = SQL_JOINS + @" INNER JOIN " + this.tbl_playerstats + @" tps USING(StatsID) ";
 
@@ -4665,7 +4665,7 @@ Multigame Support<br>
                     {
 
                         //Ranking by Kills overall Server
-                        SQL_SELECT = SQL_SELECT + @"(SELECT SUM(tss.CountPlayers) FROM " + this.tbl_server_stats + @" tss INNER JOIN " + this.tbl_server + @" ts ON tss.ServerID = ts.ServerID AND ServerGroup = @ServerGroup GROUP BY ts.ServerGroup ) AS allrank, tpr.rankKills AS rank ";
+                        SQL_SELECT = SQL_SELECT + @"(SELECT SUM(tss.CountPlayers) FROM " + this.tbl_server_stats + @" tss INNER JOIN " + this.tbl_server + @" ts ON tss.ServerID = ts.ServerID AND ServerGroup = @ServerGroup GROUP BY ts.ServerGroup ) AS allrank, tpr.rankKills AS ScoreRank ";
 
                         SQL_JOINS = SQL_JOINS + @" INNER JOIN " + this.tbl_server + @" ts2 USING(ServerID)  
                                                    INNER JOIN " + this.tbl_playerrank + @" tpr USING(PlayerID)";
@@ -4677,7 +4677,7 @@ Multigame Support<br>
                     else
                     {
                         //Ranking by Kills specfic Server
-                        SQL_SELECT = SQL_SELECT + @"(SELECT tss.CountPlayers FROM " + this.tbl_server_stats + @" tss WHERE ServerID = @ServerID ) AS allrank , tps.rankKills AS rank  ";
+                        SQL_SELECT = SQL_SELECT + @"(SELECT tss.CountPlayers FROM " + this.tbl_server_stats + @" tss WHERE ServerID = @ServerID ) AS allrank , tps.rankKills AS ScoreRank  ";
 
                         SQL_JOINS = SQL_JOINS + @" INNER JOIN " + this.tbl_playerstats + @" tps USING(StatsID) ";
 
@@ -4713,7 +4713,7 @@ Multigame Support<br>
                                 result = this.ListReplace(result, "%playerDeaths%", row["Deaths"].ToString());
                                 result = this.ListReplace(result, "%playerSuicide%", row["Suicide"].ToString());
                                 result = this.ListReplace(result, "%playerTKs%", row["TKs"].ToString());
-                                result = this.ListReplace(result, "%playerRank%", row["rank"].ToString());
+                                result = this.ListReplace(result, "%playerRank%", row["ScoreRank"].ToString());
                                 result = this.ListReplace(result, "%allRanks%", row["allrank"].ToString());
                                 result = this.ListReplace(result, "%playerHeadshots%", row["Headshots"].ToString());
                                 result = this.ListReplace(result, "%rounds%", row["RoundCount"].ToString());
@@ -6269,14 +6269,14 @@ Multigame Support<br>
                 {
                     if (this.m_enOverallRanking == enumBoolYesNo.Yes)
                     {
-                        SQL = @"SELECT tpr.rankScore AS rank
+                        SQL = @"SELECT tpr.rankScore AS ScoreRank
                                 FROM " + this.tbl_playerrank + @" tpr
                                 INNER JOIN " + this.tbl_playerdata + @" tpd ON tpr.PlayerID = tpd.PlayerID
                                 WHERE tpd.SoldierName = @SoldierName AND tpr.ServerGroup = @ServerGroup";
                     }
                     else
                     {
-                        SQL = @"SELECT tps.rankScore AS rank
+                        SQL = @"SELECT tps.rankScore AS ScoreRank
                                 FROM " + this.tbl_playerstats + @" tps
                                 INNER JOIN " + this.tbl_server_player + @" tsp ON tps.StatsID = tsp.StatsID
                                 INNER JOIN " + this.tbl_playerdata + @" tpd ON tsp.PlayerID = tpd.PlayerID
@@ -6287,14 +6287,14 @@ Multigame Support<br>
                 {
                     if (this.m_enOverallRanking == enumBoolYesNo.Yes)
                     {
-                        SQL = @"SELECT tpr.rankKills AS rank
+                        SQL = @"SELECT tpr.rankKills AS ScoreRank
                                 FROM " + this.tbl_playerrank + @" tpr
                                 INNER JOIN " + this.tbl_playerdata + @" tpd ON tpr.PlayerID = tpd.PlayerID
                                 WHERE tpd.SoldierName = @SoldierName AND tpr.ServerGroup = @ServerGroup";
                     }
                     else
                     {
-                        SQL = @"SELECT tps.rankKills AS rank
+                        SQL = @"SELECT tps.rankKills AS ScoreRank
                                 FROM " + this.tbl_playerstats + @" tps
                                 INNER JOIN " + this.tbl_server_player + @" tsp ON tps.StatsID = tsp.StatsID
                                 INNER JOIN " + this.tbl_playerdata + @" tpd ON tsp.PlayerID = tpd.PlayerID
