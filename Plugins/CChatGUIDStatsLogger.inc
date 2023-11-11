@@ -574,7 +574,7 @@ namespace PRoConEvents
 
         public string GetPluginVersion()
         {
-            return "1.0.0.3";
+            return "1.0.0.4";
         }
 
         public string GetPluginAuthor()
@@ -617,7 +617,7 @@ If you like my Plugins, please feel free to donate<br>
 <p>Go to Tools --> Options --> Plugins --> Enter you databaseserver under outgoing Connections and allow all outgoing connections</p>
 <p>Restart Procon</p>
 <p>Enter your settings into Plugin Settings and THEN enable the plugin</p>
-<p>Now the plugin should work if not request help in the <a href='https://forum.myrcon.com' target='_blank'>Forum</a></p>
+<p>Now the plugin should work if not request help in the <a href='https://myrcon.net' target='_blank'>Forum</a></p>
 
 	
 <h2>Things you have to know:</h2>
@@ -769,6 +769,8 @@ Example: M16A4{M16} --> 40MMGL{M16,M16A3}  <br><br>
 
 		
 <h3>Changelog:</h3><br>
+<b>1.0.0.4</b><br>
+Allow NON PB enabled Servers to use the Plugin for Stats tracking. See <a href='https://github.com/AdKats/ChatGUIDStatsAndMapstatsLogger/issues/5' target='_blank'>#5</a>. Thanks @icecoldme<br>
 <b>1.0.0.2</b><br>
 Bugfixes for column errors.<br>
 Bugfixes for the sessions streaming bug<br>
@@ -2956,7 +2958,7 @@ Multigame Support<br>
                                                             this.DebugInfo("Trace", "StatsID: " + this.m_ID_cache[kvp.Value.EAGuid].StatsID);
                                                         }
 
-                                                        if (kvp.Key.Length > 0 && StatsTrackerCopy[kvp.Key].Guid.Length > 0 && this.m_ID_cache[kvp.Value.EAGuid].StatsID >= 1)
+                                                        if (this.m_ID_cache[kvp.Value.EAGuid].StatsID >= 1)
                                                         {
                                                             string playerstatsSQL = @"INSERT INTO " + this.tbl_playerstats + @"(StatsID, Score, Kills, Headshots, Deaths, Suicide, TKs, Playtime, Rounds, FirstSeenOnServer, LastSeenOnServer, Killstreak, Deathstreak, HighScore , Wins, Losses)
 																VALUES(@StatsID, @Score, @Kills, @Headshots, @Deaths, @Suicide, @TKs, @Playtime, @Rounds, @FirstSeenOnServer, @LastSeenOnServer, @Killstreak, @Deathstreak, @HighScore , @Wins, @Losses) 
