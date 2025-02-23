@@ -32,8 +32,7 @@ using System.Threading;
 //using System.Net;
 
 //MySQL native includes
-//using MySql.Data;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 
 
 //Procon includes
@@ -246,11 +245,11 @@ namespace PRoConEvents
         //More Database Variables
         //Commands
         //Transactions
-        private MySql.Data.MySqlClient.MySqlTransaction MySqlTrans;
+        private MySqlTransaction MySqlTrans;
         //Connections
-        private MySql.Data.MySqlClient.MySqlConnection MySqlCon; //Select Querys 1
-        private MySql.Data.MySqlClient.MySqlConnection MySqlChatCon; //MySqlConnection for Chatlogging 
-        private MySql.Data.MySqlClient.MySqlConnection MySqlConn; //StartStreaming 2 
+        private MySqlConnection MySqlCon; //Select Querys 1
+        private MySqlConnection MySqlChatCon; //MySqlConnection for Chatlogging
+        private MySqlConnection MySqlConn; //StartStreaming 2
 
         MySqlConnectionStringBuilder myCSB = new MySqlConnectionStringBuilder();
 
@@ -3440,7 +3439,7 @@ Multigame Support<br>
                 {
                     string deleteSQL = "DELETE FROM " + this.tbl_currentplayers + " WHERE ServerID = @ServerID";
                     StringBuilder InsertSQL = new StringBuilder("INSERT INTO " + this.tbl_currentplayers + " (ServerID, SoldierName, ClanTag ,EA_GUID, PB_GUID, Score, Kills, Deaths, Headshots, Suicide, TeamID, SquadID, PlayerJoined, Ping, IP_aton, CountryCode, Killstreak, Deathstreak, GlobalRank ) VALUES ");
-                    MySql.Data.MySqlClient.MySqlTransaction Tx = null;
+                    MySqlTransaction Tx = null;
 
                     DBConnection.Open();
                     while (!success)
@@ -5127,11 +5126,11 @@ Multigame Support<br>
                     {
                         using (MySqlConnection TablebuilderCon = new MySqlConnection(this.DBConnectionStringBuilder()))
                         {
-                            MySql.Data.MySqlClient.MySqlTransaction TableTransaction = null;
+                            MySqlTransaction TableTransaction = null;
                             try
                             {
                                 this.MySql_Connection_is_activ = true;
-                                MySql.Data.MySqlClient.MySqlParameter param = new MySql.Data.MySqlClient.MySqlParameter();
+                                MySqlParameter param = new MySqlParameter();
                                 TablebuilderCon.Open();
                                 //Chatlog Table
                                 string SQLTable = @"CREATE TABLE IF NOT EXISTS `" + this.tbl_chatlog + @"` (
@@ -6835,7 +6834,7 @@ Multigame Support<br>
                 bool success = false;
                 using (MySqlConnection DBConnection = new MySqlConnection(this.DBConnectionStringBuilder()))
                 {
-                    MySql.Data.MySqlClient.MySqlTransaction Tx = null;
+                    MySqlTransaction Tx = null;
                     try
                     {
                         DBConnection.Open();
@@ -7060,7 +7059,7 @@ Multigame Support<br>
                                     SET tpr.rankScore = sub.rankScore
                                     WHERE tpr.rankScore != sub.rankScore";
 
-                MySql.Data.MySqlClient.MySqlTransaction Tx = null;
+                MySqlTransaction Tx = null;
                 using (MySqlConnection Con = new MySqlConnection(this.DBConnectionStringBuilder()))
                 {
                     try
