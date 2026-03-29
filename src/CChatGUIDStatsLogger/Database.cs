@@ -19,8 +19,11 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Text;
 using System.Threading;
+
+using Dapper;
 
 using MySqlConnector;
 
@@ -31,13 +34,13 @@ namespace PRoConEvents
 {
     public partial class CChatGUIDStatsLogger
     {
-        private string DBConnectionStringBuilder()
+        private String DBConnectionStringBuilder()
         {
-            string conString = String.Empty;
+            String conString = String.Empty;
             lock (this.ConnectionStringBuilderlock)
             {
-                uint uintport = 3306;
-                uint.TryParse(m_strDBPort, out uintport);
+                UInt32 uintport = 3306;
+                UInt32.TryParse(m_strDBPort, out uintport);
                 myCSB.Port = uintport;
                 myCSB.Server = m_strHost;
                 myCSB.UserID = m_strUserName;
@@ -72,21 +75,15 @@ namespace PRoConEvents
             return conString;
         }
 
-        private DataTable SQLquery(MySqlCommand selectQuery)
+        private DataTable SQLquery(String sql, Object param = null)
         {
             DataTable MyDataTable = new DataTable();
             try
             {
                 this.tablebuilder();
-                //this.DebugInfo("Trace", "SQLquery: " + selectQuery);                
-                if (selectQuery == null)
+                if (String.IsNullOrEmpty(sql))
                 {
-                    this.DebugInfo("Warning", "SQLquery: selectQuery is null");
-                    return MyDataTable;
-                }
-                else if (selectQuery.CommandText.Equals(String.Empty) == true)
-                {
-                    this.DebugInfo("Warning", "SQLquery: CommandText is empty");
+                    this.DebugInfo("Warning", "SQLquery: sql is null or empty");
                     return MyDataTable;
                 }
 
@@ -96,17 +93,10 @@ namespace PRoConEvents
                     {
                         using (MySqlConnection Connection = new MySqlConnection(this.DBConnectionStringBuilder()))
                         {
-                            selectQuery.Connection = Connection;
-                            using (MySqlDataAdapter MyAdapter = new MySqlDataAdapter(selectQuery))
+                            Connection.Open();
+                            using (IDataReader reader = Connection.ExecuteReader(sql, param))
                             {
-                                if (MyAdapter != null)
-                                {
-                                    MyAdapter.Fill(MyDataTable);
-                                }
-                                else
-                                {
-                                    this.DebugInfo("Warning", "SQLquery: MyAdapter is null");
-                                }
+                                MyDataTable.Load(reader);
                             }
                             Connection.Close();
                         }
@@ -131,17 +121,13 @@ namespace PRoConEvents
                         }
                         try
                         {
-                            selectQuery.Connection = this.MySqlCon;
-                            using (MySqlDataAdapter MyAdapter = new MySqlDataAdapter(selectQuery))
+                            if (this.MySqlCon.State == ConnectionState.Closed)
                             {
-                                if (MyAdapter != null)
-                                {
-                                    MyAdapter.Fill(MyDataTable);
-                                }
-                                else
-                                {
-                                    this.DebugInfo("Warning", "SQLquery: MyAdapter is null");
-                                }
+                                this.MySqlCon.Open();
+                            }
+                            using (IDataReader reader = this.MySqlCon.ExecuteReader(sql, param))
+                            {
+                                MyDataTable.Load(reader);
                             }
                         }
                         catch (MySqlException oe)
@@ -184,7 +170,7 @@ namespace PRoConEvents
             return MyDataTable;
         }
 
-        private void OpenMySqlConnection(int type)
+        private void OpenMySqlConnection(Int32 type)
         {
             try
             {
@@ -237,7 +223,7 @@ namespace PRoConEvents
             }
         }
 
-        private void CloseMySqlConnection(int type)
+        private void CloseMySqlConnection(Int32 type)
         {
             if (this.MySql_Connection_is_activ == false)
             {
@@ -307,10 +293,9 @@ namespace PRoConEvents
                             try
                             {
                                 this.MySql_Connection_is_activ = true;
-                                MySqlConnector.MySqlParameter param = new MySqlConnector.MySqlParameter();
                                 TablebuilderCon.Open();
                                 //Chatlog Table
-                                string SQLTable = @"CREATE TABLE IF NOT EXISTS `" + this.tbl_chatlog + @"` (
+                                String SQLTable = @"CREATE TABLE IF NOT EXISTS `" + this.tbl_chatlog + @"` (
                             					`ID` INT NOT NULL AUTO_INCREMENT ,
   												`logDate` DATETIME NULL DEFAULT NULL ,
   												`ServerID` SMALLINT UNSIGNED NOT NULL ,
@@ -321,10 +306,7 @@ namespace PRoConEvents
                                                     INDEX `INDEX_SERVERID` (`ServerID` ASC),
                                                     INDEX `INDEX_logDate` (`logDate` ASC))
 													ENGINE = InnoDB";
-                                using (MySqlCommand OdbcCom = new MySqlCommand(SQLTable, TablebuilderCon))
-                                {
-                                    OdbcCom.ExecuteNonQuery();
-                                }
+                                TablebuilderCon.Execute(SQLTable);
 
                                 //MapStats Table
                                 SQLTable = @"CREATE TABLE IF NOT EXISTS `" + this.tbl_mapstats + @"` (
@@ -345,10 +327,7 @@ namespace PRoConEvents
                                                       PRIMARY KEY (`ID`) ,
                                                       INDEX `ServerID_INDEX` (`ServerID` ASC) )
                                                     ENGINE = InnoDB";
-                                using (MySqlCommand OdbcCom = new MySqlCommand(SQLTable, TablebuilderCon))
-                                {
-                                    OdbcCom.ExecuteNonQuery();
-                                }
+                                TablebuilderCon.Execute(SQLTable);
 
                                 //Start of the Transaction
                                 TableTransaction = TablebuilderCon.BeginTransaction();
@@ -361,10 +340,7 @@ namespace PRoConEvents
                                                    PRIMARY KEY (`GameID`),
                                                    UNIQUE KEY `name_unique` (`Name`)
                                                    ) ENGINE=InnoDB";
-                                using (MySqlCommand OdbcCom = new MySqlCommand(SQLTable, TablebuilderCon, TableTransaction))
-                                {
-                                    OdbcCom.ExecuteNonQuery();
-                                }
+                                TablebuilderCon.Execute(SQLTable, transaction: TableTransaction);
 
                                 //Table playerdata
                                 SQLTable = @"CREATE TABLE IF NOT EXISTS `" + this.tbl_playerdata + @"` (
@@ -382,10 +358,7 @@ namespace PRoConEvents
 												  UNIQUE INDEX `UNIQUE_playerdata` (`GameID` ASC,`EAGUID` ASC) ,
 												  INDEX `INDEX_SoldierName` (`SoldierName` ASC) )
 												ENGINE = InnoDB";
-                                using (MySqlCommand OdbcCom = new MySqlCommand(SQLTable, TablebuilderCon, TableTransaction))
-                                {
-                                    OdbcCom.ExecuteNonQuery();
-                                }
+                                TablebuilderCon.Execute(SQLTable, transaction: TableTransaction);
 
                                 //Server Table
                                 SQLTable = @"CREATE TABLE IF NOT EXISTS `" + this.tbl_server + @"` (
@@ -398,7 +371,7 @@ namespace PRoConEvents
 									  `maxSlots` SMALLINT UNSIGNED NULL DEFAULT 0 ,
 									  `mapName` VARCHAR(45) NULL DEFAULT NULL ,
 									  `fullMapName` TEXT NULL DEFAULT NULL ,
-                                      
+
 									  `Gamemode` VARCHAR(45) NULL DEFAULT NULL ,
 									  `GameMod` VARCHAR(45) NULL DEFAULT NULL ,
 									  `PBversion` VARCHAR(45) NULL DEFAULT NULL ,
@@ -408,10 +381,7 @@ namespace PRoConEvents
 									  UNIQUE INDEX `IP_Address_UNIQUE` (`IP_Address` ASC) )
 									ENGINE = InnoDB";
 
-                                using (MySqlCommand OdbcCom = new MySqlCommand(SQLTable, TablebuilderCon, TableTransaction))
-                                {
-                                    OdbcCom.ExecuteNonQuery();
-                                }
+                                TablebuilderCon.Execute(SQLTable, transaction: TableTransaction);
 
                                 //Server Player Table
                                 SQLTable = @"CREATE TABLE IF NOT EXISTS `" + this.tbl_server_player + @"` (
@@ -433,10 +403,7 @@ namespace PRoConEvents
 								    ON DELETE CASCADE
 								    ON UPDATE NO ACTION)
 								ENGINE = InnoDB";
-                                using (MySqlCommand OdbcCom = new MySqlCommand(SQLTable, TablebuilderCon, TableTransaction))
-                                {
-                                    OdbcCom.ExecuteNonQuery();
-                                }
+                                TablebuilderCon.Execute(SQLTable, transaction: TableTransaction);
                                 //
                                 //ServerStatistics Table
                                 SQLTable = @"CREATE  TABLE IF NOT EXISTS `" + this.tbl_server_stats + @"` (
@@ -466,10 +433,7 @@ namespace PRoConEvents
                                     ON DELETE CASCADE
                                     ON UPDATE NO ACTION)
                                 ENGINE = InnoDB";
-                                using (MySqlCommand OdbcCom = new MySqlCommand(SQLTable, TablebuilderCon, TableTransaction))
-                                {
-                                    OdbcCom.ExecuteNonQuery();
-                                }
+                                TablebuilderCon.Execute(SQLTable, transaction: TableTransaction);
 
                                 //Stats Table
                                 SQLTable = @"CREATE  TABLE IF NOT EXISTS `" + this.tbl_playerstats + @"` (
@@ -502,10 +466,7 @@ namespace PRoConEvents
 								    ON UPDATE NO ACTION)
 								ENGINE = InnoDB";
 
-                                using (MySqlCommand OdbcCom = new MySqlCommand(SQLTable, TablebuilderCon, TableTransaction))
-                                {
-                                    OdbcCom.ExecuteNonQuery();
-                                }
+                                TablebuilderCon.Execute(SQLTable, transaction: TableTransaction);
 
                                 //Playerrank Table
                                 SQLTable = @"CREATE TABLE IF NOT EXISTS `" + this.tbl_playerrank + @"` (
@@ -523,10 +484,7 @@ namespace PRoConEvents
                                         ON UPDATE NO ACTION)
                                     ENGINE = InnoDB";
 
-                                using (MySqlCommand OdbcCom = new MySqlCommand(SQLTable, TablebuilderCon, TableTransaction))
-                                {
-                                    OdbcCom.ExecuteNonQuery();
-                                }
+                                TablebuilderCon.Execute(SQLTable, transaction: TableTransaction);
 
                                 //Playersession Table
                                 SQLTable = @"CREATE TABLE IF NOT EXISTS `" + this.tbl_sessions + @"` (
@@ -550,17 +508,14 @@ namespace PRoConEvents
                                           PRIMARY KEY (`SessionID`),
                                           INDEX `INDEX_STATSID" + this.tableSuffix + @"` (`StatsID` ASC),
                                           INDEX `INDEX_STARTTIME" + this.tableSuffix + @"` (`StartTime` ASC),
-                                          CONSTRAINT `fk_tbl_sessions_tbl_server_player" + this.tableSuffix + @"` 
-                                            FOREIGN KEY (`StatsID`) 
-                                            REFERENCES `" + this.tbl_server_player + @"` (`StatsID`) 
-                                            ON DELETE CASCADE 
-                                            ON UPDATE NO ACTION) 
+                                          CONSTRAINT `fk_tbl_sessions_tbl_server_player" + this.tableSuffix + @"`
+                                            FOREIGN KEY (`StatsID`)
+                                            REFERENCES `" + this.tbl_server_player + @"` (`StatsID`)
+                                            ON DELETE CASCADE
+                                            ON UPDATE NO ACTION)
                                          ENGINE=InnoDB";
 
-                                using (MySqlCommand OdbcCom = new MySqlCommand(SQLTable, TablebuilderCon, TableTransaction))
-                                {
-                                    OdbcCom.ExecuteNonQuery();
-                                }
+                                TablebuilderCon.Execute(SQLTable, transaction: TableTransaction);
 
                                 //currentplayers
                                 SQLTable = @"CREATE TABLE IF NOT EXISTS `" + this.tbl_currentplayers + @"` (
@@ -585,26 +540,20 @@ namespace PRoConEvents
                                                   `PlayerJoined` datetime DEFAULT NULL,
                                               PRIMARY KEY (`ServerID`,`Soldiername`)
                                             ) ENGINE=InnoDB";
-                                using (MySqlCommand OdbcCom = new MySqlCommand(SQLTable, TablebuilderCon, TableTransaction))
-                                {
-                                    OdbcCom.ExecuteNonQuery();
-                                }
+                                TablebuilderCon.Execute(SQLTable, transaction: TableTransaction);
 
                                 //Awards
                                 /*
                                 SQLTable = @"CREATE  TABLE IF NOT EXISTS `" + this.tbl_awards + @"` (
                                                       `AwardID` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY ";
-                                foreach (string strcolumn in this.m_lstAwardTable)
+                                foreach (String strcolumn in this.m_lstAwardTable)
                                 {
                                     SQLTable = String.Concat(SQLTable, ",`", strcolumn, "` mediumint(8) unsigned DEFAULT '0' ");
                                 }
                                 SQLTable = String.Concat(SQLTable, ")ENGINE = InnoDB DEFAULT CHARACTER SET = latin1");
                                 if (this.m_awardsON == enumBoolYesNo.Yes)
                                 {
-                                    using (MySqlCommand OdbcCom = new MySqlCommand(SQLTable, TablebuilderCon, TableTransaction))
-                                    {
-                                        OdbcCom.ExecuteNonQuery();
-                                    }
+                                    TablebuilderCon.Execute(SQLTable, transaction: TableTransaction);
                                 }
                                 */
 
@@ -620,10 +569,7 @@ namespace PRoConEvents
                                               PRIMARY KEY (`WeaponID`),
                                               UNIQUE KEY `unique` (`GameID`,`fullname`)
                                             ) ENGINE=InnoDB";
-                                using (MySqlCommand OdbcCom = new MySqlCommand(SQLTable, TablebuilderCon, TableTransaction))
-                                {
-                                    OdbcCom.ExecuteNonQuery();
-                                }
+                                TablebuilderCon.Execute(SQLTable, transaction: TableTransaction);
 
                                 //New Weapon stats table
                                 SQLTable = @"CREATE TABLE IF NOT EXISTS `" + this.tbl_weapons_stats + @"` (
@@ -641,10 +587,7 @@ namespace PRoConEvents
 								                    ON DELETE CASCADE
 								                    ON UPDATE NO ACTION
                                                 ) ENGINE=InnoDB";
-                                using (MySqlCommand OdbcCom = new MySqlCommand(SQLTable, TablebuilderCon, TableTransaction))
-                                {
-                                    OdbcCom.ExecuteNonQuery();
-                                }
+                                TablebuilderCon.Execute(SQLTable, transaction: TableTransaction);
 
                                 //Dogtagstable
                                 SQLTable = @"CREATE TABLE IF NOT EXISTS `" + this.tbl_dogtags + @"` (
@@ -665,10 +608,7 @@ namespace PRoConEvents
 									    ON DELETE CASCADE
 									    ON UPDATE NO ACTION)
 									ENGINE = InnoDB";
-                                using (MySqlCommand OdbcCom = new MySqlCommand(SQLTable, TablebuilderCon, TableTransaction))
-                                {
-                                    OdbcCom.ExecuteNonQuery();
-                                }
+                                TablebuilderCon.Execute(SQLTable, transaction: TableTransaction);
 
                                 //Score and Tickettable
                                 SQLTable = @"CREATE TABLE IF NOT EXISTS `" + this.tbl_teamscores + @"` (
@@ -678,10 +618,7 @@ namespace PRoConEvents
                                               `WinningScore` int(11) DEFAULT NULL,
                                               PRIMARY KEY (`ServerID`,`TeamID` )
                                              ) ENGINE=InnoDB";
-                                using (MySqlCommand OdbcCom = new MySqlCommand(SQLTable, TablebuilderCon, TableTransaction))
-                                {
-                                    OdbcCom.ExecuteNonQuery();
-                                }
+                                TablebuilderCon.Execute(SQLTable, transaction: TableTransaction);
 
                                 //Commit the Transaction
                                 TableTransaction.Commit();
@@ -692,11 +629,11 @@ namespace PRoConEvents
                                 //get GameID
                                 this.intServerGameType_ID = this.GetGameIDfromDB(this.strServerGameType);
 
-                                List<string> addedWeaponList = new List<string>();
+                                List<String> addedWeaponList = new List<String>();
 
-                                foreach (KeyValuePair<string, Dictionary<string, CStats.CUsedWeapon>> branch in this.weaponDic)
+                                foreach (KeyValuePair<String, Dictionary<String, CStats.CUsedWeapon>> branch in this.weaponDic)
                                 {
-                                    string sqlCheckweapon = @"SELECT 
+                                    String sqlCheckweapon = @"SELECT
                                                                 `GameID`,
                                                                 `Friendlyname`,
                                                                 `Fullname`,
@@ -704,62 +641,56 @@ namespace PRoConEvents
                                                             FROM `" + this.tbl_weapons + @"`
                                                             WHERE `GameID` = @GameID
                                                               AND `Damagetype` = @Damagetype";
-                                    using (MySqlCommand MyCommand = new MySqlCommand(sqlCheckweapon))
+
+                                    using (DataTable result = this.SQLquery(sqlCheckweapon, new { GameID = this.intServerGameType_ID, Damagetype = branch.Key.ToLower() }))
                                     {
-                                        MyCommand.Parameters.AddWithValue("@GameID", this.intServerGameType_ID);
-                                        MyCommand.Parameters.AddWithValue("@Damagetype", branch.Key.ToLower());
-
-                                        using (DataTable result = this.SQLquery(MyCommand))
+                                        //this.DebugInfo("Info", "Rowcount:" + result.Rows.Count.ToString());
+                                        if (result.Rows.Count >= 1)
                                         {
-                                            //this.DebugInfo("Info", "Rowcount:" + result.Rows.Count.ToString());
-                                            if (result.Rows.Count >= 1)
-                                            {
-                                                result.PrimaryKey = new DataColumn[] { result.Columns["GameID"], result.Columns["Fullname"] };
-                                            }
-                                            TableTransaction = null;
-                                            TableTransaction = TablebuilderCon.BeginTransaction();
+                                            result.PrimaryKey = new DataColumn[] { result.Columns["GameID"], result.Columns["Fullname"] };
+                                        }
+                                        TableTransaction = null;
+                                        TableTransaction = TablebuilderCon.BeginTransaction();
 
-                                            foreach (KeyValuePair<string, CStats.CUsedWeapon> leap in branch.Value)
+                                        foreach (KeyValuePair<String, CStats.CUsedWeapon> leap in branch.Value)
+                                        {
+                                            if (result.Rows.Count == 0 || result.Rows.Contains(new Object[] { this.intServerGameType_ID, leap.Value.Name }) == false || addedWeaponList.Contains(leap.Value.Name) == true)
                                             {
-                                                if (result.Rows.Count == 0 || result.Rows.Contains(new object[] { this.intServerGameType_ID, leap.Value.Name }) == false || addedWeaponList.Contains(leap.Value.Name) == true)
-                                                {
-                                                    addedWeaponList.Add(leap.Value.Name);
-                                                    //add weapon entry
-                                                    string sqlInsertQuery = "INSERT INTO `" + this.tbl_weapons + @"` ( `GameID`, `Friendlyname`, `Fullname`,`Damagetype`,`Slot`,`Kitrestriction`) VALUES(@GameID, @Friendlyname, @Fullname, @Damagetype,@Slot,@Kitrestriction)
+                                                addedWeaponList.Add(leap.Value.Name);
+                                                //add weapon entry
+                                                String sqlInsertQuery = "INSERT INTO `" + this.tbl_weapons + @"` ( `GameID`, `Friendlyname`, `Fullname`,`Damagetype`,`Slot`,`Kitrestriction`) VALUES(@GameID, @Friendlyname, @Fullname, @Damagetype,@Slot,@Kitrestriction)
                                                                             ON DUPLICATE KEY UPDATE `Friendlyname` = @Friendlyname ,`Damagetype` =  @Damagetype,`Slot` = @Slot,`Kitrestriction` = @Kitrestriction";
 
-                                                    using (MySqlCommand OdbcCom = new MySqlCommand(sqlInsertQuery, TablebuilderCon, TableTransaction))
+                                                if (this.intServerGameType_ID != 0)
+                                                {
+                                                    TablebuilderCon.Execute(sqlInsertQuery, new
                                                     {
-                                                        OdbcCom.Parameters.AddWithValue("@GameID", this.intServerGameType_ID);
-                                                        OdbcCom.Parameters.AddWithValue("@Friendlyname", leap.Value.FieldName);
-                                                        OdbcCom.Parameters.AddWithValue("@Fullname", leap.Value.Name);
-                                                        OdbcCom.Parameters.AddWithValue("@Damagetype", branch.Key.ToLower());
-                                                        OdbcCom.Parameters.AddWithValue("@Slot", leap.Value.Slot);
-                                                        OdbcCom.Parameters.AddWithValue("@Kitrestriction", leap.Value.KitRestriction);
-                                                        if (this.intServerGameType_ID != 0)
-                                                        {
-                                                            OdbcCom.ExecuteNonQuery();
-                                                        }
-                                                    }
+                                                        GameID = this.intServerGameType_ID,
+                                                        Friendlyname = leap.Value.FieldName,
+                                                        Fullname = leap.Value.Name,
+                                                        Damagetype = branch.Key.ToLower(),
+                                                        Slot = leap.Value.Slot,
+                                                        Kitrestriction = leap.Value.KitRestriction
+                                                    }, transaction: TableTransaction);
                                                 }
                                             }
-                                            TableTransaction.Commit();
                                         }
+                                        TableTransaction.Commit();
                                     }
                                 }
 
                                 //Create WeaponMapping
-                                this.WeaponMappingDic = new Dictionary<string, int>(this.GetWeaponMappingfromDB());
+                                this.WeaponMappingDic = new Dictionary<String, Int32>(this.GetWeaponMappingfromDB());
 
 
                                 //TableCheck & Adjustemnts tbl_playerstats
                                 /*
-                                string sqlCheckplayerstats = "DESC `" + this.tbl_playerstats + "`";
-                                string sqlAltertableplayerstats = "ALTER TABLE `" + this.tbl_playerstats + "` ";
-                                string sqlIndex = "";
+                                String sqlCheckplayerstats = "DESC `" + this.tbl_playerstats + "`";
+                                String sqlAltertableplayerstats = "ALTER TABLE `" + this.tbl_playerstats + "` ";
+                                String sqlIndex = "";
                                 this.DebugInfo("Trace", "Tablecheck playerstats");
-                                bool column_Missing = false;
-                                using (DataTable result = this.SQLquery(new MySqlCommand(sqlCheckplayerstats)))
+                                Boolean column_Missing = false;
+                                using (DataTable result = this.SQLquery(sqlCheckplayerstats))
                                 {
                                     DataColumn[] key = new DataColumn[1];
                                     key[0] = result.Columns[0];
@@ -769,35 +700,35 @@ namespace PRoConEvents
                                     if (result.Rows.Contains("rankScore") == false)
                                     {
                                         this.DebugInfo("Trace", "Column rankScore is missing, Adding it to the table!");
-                                        sqlAltertableplayerstats = string.Concat(sqlAltertableplayerstats, "ADD COLUMN `rankScore` INT(10) UNSIGNED NOT NULL DEFAULT '0', ");
+                                        sqlAltertableplayerstats = String.Concat(sqlAltertableplayerstats, "ADD COLUMN `rankScore` INT(10) UNSIGNED NOT NULL DEFAULT '0', ");
                                         column_Missing = true;
-                                        sqlIndex = string.Concat(sqlIndex, "ADD INDEX `INDEX_RANK_SCORE" + this.tableSuffix + @"` (`rankScore` ASC), ");
+                                        sqlIndex = String.Concat(sqlIndex, "ADD INDEX `INDEX_RANK_SCORE" + this.tableSuffix + @"` (`rankScore` ASC), ");
                                     }
                                     if (result.Rows.Contains("rankKills") == false)
                                     {
                                         this.DebugInfo("Trace", "Column rankScore is missing, Adding it to the table!");
-                                        sqlAltertableplayerstats = string.Concat(sqlAltertableplayerstats, "ADD COLUMN `rankKills` INT(10) UNSIGNED NOT NULL DEFAULT '0', ");
+                                        sqlAltertableplayerstats = String.Concat(sqlAltertableplayerstats, "ADD COLUMN `rankKills` INT(10) UNSIGNED NOT NULL DEFAULT '0', ");
                                         column_Missing = true;
-                                        sqlIndex = string.Concat(sqlIndex, "ADD INDEX `INDEX_RANK_KILLS" + this.tableSuffix + @"` (`rankKills` ASC), ");
+                                        sqlIndex = String.Concat(sqlIndex, "ADD INDEX `INDEX_RANK_KILLS" + this.tableSuffix + @"` (`rankKills` ASC), ");
                                     }
                                     //Wins & Losses
                                     if (result.Rows.Contains("Wins") == false)
                                     {
                                         this.DebugInfo("Trace", "Column Wins is missing, Adding it to the table!");
-                                        sqlAltertableplayerstats = string.Concat(sqlAltertableplayerstats, "ADD COLUMN `Wins` MEDIUMINT UNSIGNED NOT NULL DEFAULT '0', ");
+                                        sqlAltertableplayerstats = String.Concat(sqlAltertableplayerstats, "ADD COLUMN `Wins` MEDIUMINT UNSIGNED NOT NULL DEFAULT '0', ");
                                         column_Missing = true;
                                     }
                                     if (result.Rows.Contains("Losses") == false)
                                     {
                                         this.DebugInfo("Trace", "Column Losses is missing, Adding it to the table!");
-                                        sqlAltertableplayerstats = string.Concat(sqlAltertableplayerstats, "ADD COLUMN `Losses` MEDIUMINT UNSIGNED NOT NULL DEFAULT '0', ");
+                                        sqlAltertableplayerstats = String.Concat(sqlAltertableplayerstats, "ADD COLUMN `Losses` MEDIUMINT UNSIGNED NOT NULL DEFAULT '0', ");
                                         column_Missing = true;
                                     }
                                     //HighScore
                                     if (result.Rows.Contains("HighScore") == false)
                                     {
                                         this.DebugInfo("Trace", "Column HighScore is missing, Adding it to the table!");
-                                        sqlAltertableplayerstats = string.Concat(sqlAltertableplayerstats, "ADD COLUMN `HighScore` MEDIUMINT UNSIGNED NOT NULL DEFAULT '0' , ");
+                                        sqlAltertableplayerstats = String.Concat(sqlAltertableplayerstats, "ADD COLUMN `HighScore` MEDIUMINT UNSIGNED NOT NULL DEFAULT '0' , ");
                                         column_Missing = true;
                                     }
                                 }
@@ -806,19 +737,16 @@ namespace PRoConEvents
                                     TableTransaction = null;
                                     TableTransaction = TablebuilderCon.BeginTransaction();
                                     //Adding Columns
-                                    sqlAltertableplayerstats = string.Concat(sqlAltertableplayerstats, sqlIndex);
-                                    int charindex = sqlAltertableplayerstats.LastIndexOf(",");
+                                    sqlAltertableplayerstats = String.Concat(sqlAltertableplayerstats, sqlIndex);
+                                    Int32 charindex = sqlAltertableplayerstats.LastIndexOf(",");
                                     if (charindex > 0)
                                     {
                                         sqlAltertableplayerstats = sqlAltertableplayerstats.Remove(charindex);
                                     }
-                                    using (MySqlCommand OdbcCom = new MySqlCommand(sqlAltertableplayerstats, TablebuilderCon, TableTransaction))
-                                    {
-                                        OdbcCom.ExecuteNonQuery();
-                                    }
+                                    TablebuilderCon.Execute(sqlAltertableplayerstats, transaction: TableTransaction);
                                     TableTransaction.Commit();
                                 }
-                                
+
 
                                 //TableCheck & Adjustemnts tbl_server
                                 sqlCheckplayerstats = "DESC `" + this.tbl_server + "`";
@@ -826,7 +754,7 @@ namespace PRoConEvents
                                 sqlIndex = "";
                                 this.DebugInfo("Trace", "Tablecheck tbl_server");
                                 column_Missing = false;
-                                using (DataTable result = this.SQLquery(new MySqlCommand(sqlCheckplayerstats)))
+                                using (DataTable result = this.SQLquery(sqlCheckplayerstats))
                                 {
                                     DataColumn[] key = new DataColumn[1];
                                     key[0] = result.Columns[0];
@@ -836,9 +764,9 @@ namespace PRoConEvents
                                     if (result.Rows.Contains("ServerGroup") == false)
                                     {
                                         this.DebugInfo("Trace", "Column ServerGroup is missing, Adding it to the table!");
-                                        sqlAltertableplayerstats = string.Concat(sqlAltertableplayerstats, "ADD COLUMN `ServerGroup` TINYINT UNSIGNED NOT NULL DEFAULT 0 ,");
+                                        sqlAltertableplayerstats = String.Concat(sqlAltertableplayerstats, "ADD COLUMN `ServerGroup` TINYINT UNSIGNED NOT NULL DEFAULT 0 ,");
                                         column_Missing = true;
-                                        sqlIndex = string.Concat(sqlIndex, "ADD INDEX `INDEX_SERVERGROUP" + this.tableSuffix + @"` (`ServerGroup` ASC) ,");
+                                        sqlIndex = String.Concat(sqlIndex, "ADD INDEX `INDEX_SERVERGROUP" + this.tableSuffix + @"` (`ServerGroup` ASC) ,");
                                     }
                                 }
                                 if (column_Missing == true)
@@ -846,16 +774,13 @@ namespace PRoConEvents
                                     TableTransaction = null;
                                     TableTransaction = TablebuilderCon.BeginTransaction();
                                     //Adding Columns
-                                    sqlAltertableplayerstats = string.Concat(sqlAltertableplayerstats, sqlIndex);
-                                    int charindex = sqlAltertableplayerstats.LastIndexOf(",");
+                                    sqlAltertableplayerstats = String.Concat(sqlAltertableplayerstats, sqlIndex);
+                                    Int32 charindex = sqlAltertableplayerstats.LastIndexOf(",");
                                     if (charindex > 0)
                                     {
                                         sqlAltertableplayerstats = sqlAltertableplayerstats.Remove(charindex);
                                     }
-                                    using (MySqlCommand OdbcCom = new MySqlCommand(sqlAltertableplayerstats, TablebuilderCon, TableTransaction))
-                                    {
-                                        OdbcCom.ExecuteNonQuery();
-                                    }
+                                    TablebuilderCon.Execute(sqlAltertableplayerstats, transaction: TableTransaction);
                                     TableTransaction.Commit();
                                 }
 
@@ -867,21 +792,21 @@ namespace PRoConEvents
                                 //TableCheck Awards
                                 sqlCheck = "DESC `" + this.tbl_awards + "`";
                                 sqlAltertable = "ALTER TABLE `" + this.tbl_awards + "` ";
-                                //result = new List<string>(this.SQLquery(sqlCheck,9));
+                                //result = new List<String>(this.SQLquery(sqlCheck,9));
                                 this.DebugInfo("Tablecheck Awards");
-                                using (DataTable result = this.SQLquery(new MySqlCommand(sqlCheck)))
+                                using (DataTable result = this.SQLquery(sqlCheck))
                                 {
                                     DataColumn[] key = new DataColumn[1];
                                     key[0] = result.Columns[0];
                                     result.PrimaryKey = key;
                                     fieldMissing = false;
 
-                                    foreach (string strField in this.m_lstAwardTable)
+                                    foreach (String strField in this.m_lstAwardTable)
                                     {
                                         if (result.Rows.Contains(strField) == false)
                                         {
                                             this.DebugInfo(strField + " is missing, Adding it to the table!");
-                                            sqlAltertable = string.Concat(sqlAltertable, "ADD COLUMN `" + strField + "` mediumint(8) unsigned DEFAULT '0', ");
+                                            sqlAltertable = String.Concat(sqlAltertable, "ADD COLUMN `" + strField + "` mediumint(8) unsigned DEFAULT '0', ");
                                             fieldMissing = true;
                                         }
                                     }
@@ -891,25 +816,16 @@ namespace PRoConEvents
                                     TableTransaction = null;
                                     TableTransaction = TablebuilderCon.BeginTransaction();
                                     SQLTable = "ALTER TABLE `" + this.tbl_awards + "` ENGINE = MyISAM";
-                                    using (MySqlCommand OdbcCom = new MySqlCommand(SQLTable, TablebuilderCon, TableTransaction))
-                                    {
-                                        OdbcCom.ExecuteNonQuery();
-                                    }
+                                    TablebuilderCon.Execute(SQLTable, transaction: TableTransaction);
                                     //Adding Columns
-                                    int charindex = sqlAltertable.LastIndexOf(",");
+                                    Int32 charindex = sqlAltertable.LastIndexOf(",");
                                     if (charindex > 0)
                                     {
                                         sqlAltertable = sqlAltertable.Remove(charindex);
                                     }
-                                    using (MySqlCommand OdbcCom = new MySqlCommand(sqlAltertable, TablebuilderCon, TableTransaction))
-                                    {
-                                        OdbcCom.ExecuteNonQuery();
-                                    }
+                                    TablebuilderCon.Execute(sqlAltertable, transaction: TableTransaction);
                                     SQLTable = "ALTER TABLE `" + this.tbl_awards + "` ENGINE = InnoDB";
-                                    using (MySqlCommand OdbcCom = new MySqlCommand(SQLTable, TablebuilderCon, TableTransaction))
-                                    {
-                                        OdbcCom.ExecuteNonQuery();
-                                    }
+                                    TablebuilderCon.Execute(SQLTable, transaction: TableTransaction);
                                     TableTransaction.Commit();
                                 }
                                 */
@@ -947,10 +863,10 @@ namespace PRoConEvents
             }
         }
 
-        private C_ID_Cache GetID(string EAguid)
+        private C_ID_Cache GetID(String EAguid)
         {
-            int playerID = 0;
-            int StatsID = 0;
+            Int32 playerID = 0;
+            Int32 StatsID = 0;
             if (GlobalDebugMode.Equals("Trace"))
             {
                 this.DebugInfo("Trace", "Tying to get IDs form DB or cache for EAGuid: " + EAguid);
@@ -973,18 +889,14 @@ namespace PRoConEvents
                         //Cachemiss
                         if (this.m_ID_cache[EAguid].Id <= 0)
                         {
-                            using (MySqlCommand MyCommand = new MySqlCommand(@"SELECT `PlayerID` FROM `" + this.tbl_playerdata + "` WHERE `GameID` = @GameID AND `EAGUID` = @EAGUID "))
+                            String sqlPlayerID = @"SELECT `PlayerID` FROM `" + this.tbl_playerdata + "` WHERE `GameID` = @GameID AND `EAGUID` = @EAGUID ";
+                            DataTable resultTable = this.SQLquery(sqlPlayerID, new { GameID = this.intServerGameType_ID, EAGUID = EAguid });
+                            if (resultTable.Rows != null)
                             {
-                                MyCommand.Parameters.AddWithValue("@GameID", this.intServerGameType_ID);
-                                MyCommand.Parameters.AddWithValue("@EAGUID", EAguid);
-                                DataTable resultTable = this.SQLquery(MyCommand);
-                                if (resultTable.Rows != null)
+                                foreach (DataRow row in resultTable.Rows)
                                 {
-                                    foreach (DataRow row in resultTable.Rows)
-                                    {
-                                        playerID = Convert.ToInt32(row["PlayerID"]);
-                                        this.m_ID_cache[EAguid].Id = playerID;
-                                    }
+                                    playerID = Convert.ToInt32(row["PlayerID"]);
+                                    this.m_ID_cache[EAguid].Id = playerID;
                                 }
                             }
                         }
@@ -994,18 +906,14 @@ namespace PRoConEvents
                         }
                         if (playerID >= 1)
                         {
-                            using (MySqlCommand MyCommand = new MySqlCommand(@"SELECT `StatsID` FROM `" + this.tbl_server_player + "` WHERE `PlayerID` = @PlayerID AND `ServerID`= @ServerID "))
+                            String sqlStatsID = @"SELECT `StatsID` FROM `" + this.tbl_server_player + "` WHERE `PlayerID` = @PlayerID AND `ServerID`= @ServerID ";
+                            DataTable resultTable = this.SQLquery(sqlStatsID, new { PlayerID = playerID, ServerID = this.ServerID });
+                            if (resultTable.Rows != null)
                             {
-                                MyCommand.Parameters.AddWithValue("@PlayerID", playerID);
-                                MyCommand.Parameters.AddWithValue("@ServerID", this.ServerID);
-                                DataTable resultTable = this.SQLquery(MyCommand);
-                                if (resultTable.Rows != null)
+                                foreach (DataRow row in resultTable.Rows)
                                 {
-                                    foreach (DataRow row in resultTable.Rows)
-                                    {
-                                        StatsID = Convert.ToInt32(row["StatsID"]);
-                                        this.m_ID_cache[EAguid].StatsID = StatsID;
-                                    }
+                                    StatsID = Convert.ToInt32(row["StatsID"]);
+                                    this.m_ID_cache[EAguid].StatsID = StatsID;
                                 }
                             }
                         }
@@ -1014,32 +922,24 @@ namespace PRoConEvents
                 else
                 {
                     //Cache has no entry
-                    using (MySqlCommand MyCommand = new MySqlCommand(@"SELECT `PlayerID` FROM `" + this.tbl_playerdata + "` WHERE `GameID` = @GameID AND `EAGUID` = @EAGUID "))
+                    String sqlPlayerID = @"SELECT `PlayerID` FROM `" + this.tbl_playerdata + "` WHERE `GameID` = @GameID AND `EAGUID` = @EAGUID ";
+                    DataTable resultTable = this.SQLquery(sqlPlayerID, new { GameID = this.intServerGameType_ID, EAGUID = EAguid });
+                    if (resultTable.Rows != null)
                     {
-                        MyCommand.Parameters.AddWithValue("@GameID", this.intServerGameType_ID);
-                        MyCommand.Parameters.AddWithValue("@EAGUID", EAguid);
-                        DataTable resultTable = this.SQLquery(MyCommand);
-                        if (resultTable.Rows != null)
+                        foreach (DataRow row in resultTable.Rows)
                         {
-                            foreach (DataRow row in resultTable.Rows)
-                            {
-                                playerID = Convert.ToInt32(row["PlayerID"]);
-                            }
+                            playerID = Convert.ToInt32(row["PlayerID"]);
                         }
                     }
                     if (playerID >= 1)
                     {
-                        using (MySqlCommand MyCommand = new MySqlCommand(@"SELECT `StatsID` FROM `" + this.tbl_server_player + "` WHERE `PlayerID` = @PlayerID AND `ServerID`= @ServerID"))
+                        String sqlStatsID = @"SELECT `StatsID` FROM `" + this.tbl_server_player + "` WHERE `PlayerID` = @PlayerID AND `ServerID`= @ServerID";
+                        resultTable = this.SQLquery(sqlStatsID, new { PlayerID = playerID, ServerID = this.ServerID });
+                        if (resultTable.Rows != null)
                         {
-                            MyCommand.Parameters.AddWithValue("@PlayerID", playerID);
-                            MyCommand.Parameters.AddWithValue("@ServerID", this.ServerID);
-                            DataTable resultTable = this.SQLquery(MyCommand);
-                            if (resultTable.Rows != null)
+                            foreach (DataRow row in resultTable.Rows)
                             {
-                                foreach (DataRow row in resultTable.Rows)
-                                {
-                                    StatsID = Convert.ToInt32(row["StatsID"]);
-                                }
+                                StatsID = Convert.ToInt32(row["StatsID"]);
                             }
                         }
                     }
@@ -1058,9 +958,9 @@ namespace PRoConEvents
             return this.m_ID_cache[EAguid];
         }
 
-        private void UpdateIDCache(List<string> lstEAGUID)
+        private void UpdateIDCache(List<String> lstEAGUID)
         {
-            foreach (string EAGUID in lstEAGUID)
+            foreach (String EAGUID in lstEAGUID)
             {
                 if (this.m_ID_cache.ContainsKey(EAGUID) == false)
                 {
@@ -1078,57 +978,49 @@ namespace PRoConEvents
                           FROM " + this.tbl_playerdata + @" tpd
                           LEFT JOIN " + this.tbl_server_player + @" tsp ON tpd.PlayerID = tsp.PlayerID AND ServerID = @ServerID
                           WHERE tpd.GameID = @GameID AND tpd.EAGUID IN (");
-            for (int i = 1; i <= lstEAGUID.Count; i++)
+            DynamicParameters dynParams = new DynamicParameters();
+            dynParams.Add("ServerID", this.ServerID);
+            dynParams.Add("GameID", this.intServerGameType_ID);
+            for (Int32 i = 1; i <= lstEAGUID.Count; i++)
             {
                 SQL.Append("@EAGUID" + i + ",");
+                dynParams.Add("EAGUID" + i, lstEAGUID[i - 1]);
             }
             SQL.Length = SQL.Length - 1;
             SQL.Append(')');
             try
             {
-                using (MySqlCommand SelectCommand = new MySqlCommand(SQL.ToString()))
+                DataTable result = this.SQLquery(SQL.ToString(), dynParams);
+                if (result != null)
                 {
-                    SelectCommand.Parameters.AddWithValue("@ServerID", this.ServerID);
-                    SelectCommand.Parameters.AddWithValue("@GameID", this.intServerGameType_ID);
-                    int i = 1;
-                    foreach (string EAGUID in lstEAGUID)
+                    foreach (DataRow row in result.Rows)
                     {
-                        SelectCommand.Parameters.AddWithValue("@EAGUID" + i, EAGUID);
-                        i++;
-                    }
-                    DataTable result;
-                    result = this.SQLquery(SelectCommand);
-                    if (result != null)
-                    {
-                        foreach (DataRow row in result.Rows)
+                        if (row[1] == Convert.DBNull)
                         {
-                            if (row[1] == Convert.DBNull)
+                            this.m_ID_cache.Add(row[0].ToString(), new C_ID_Cache(0, 0, true));
+                            continue;
+                        }
+                        if (this.m_ID_cache.ContainsKey(row[0].ToString()))
+                        {
+                            this.m_ID_cache[row[0].ToString()].Id = Convert.ToInt32(row[1]);
+                            if (row[2] == Convert.DBNull)
                             {
-                                this.m_ID_cache.Add(row[0].ToString(), new C_ID_Cache(0, 0, true));
-                                continue;
-                            }
-                            if (this.m_ID_cache.ContainsKey(row[0].ToString()))
-                            {
-                                this.m_ID_cache[row[0].ToString()].Id = Convert.ToInt32(row[1]);
-                                if (row[2] == Convert.DBNull)
-                                {
-                                    this.m_ID_cache[row[0].ToString()].StatsID = 0;
-                                }
-                                else
-                                {
-                                    this.m_ID_cache[row[0].ToString()].StatsID = Convert.ToInt32(row[2]);
-                                }
+                                this.m_ID_cache[row[0].ToString()].StatsID = 0;
                             }
                             else
                             {
-                                if (row[2] == Convert.DBNull)
-                                {
-                                    this.m_ID_cache.Add(row[0].ToString(), new C_ID_Cache(0, Convert.ToInt32(row[1]), true));
-                                }
-                                else
-                                {
-                                    this.m_ID_cache.Add(row[0].ToString(), new C_ID_Cache(Convert.ToInt32(row[2]), Convert.ToInt32(row[1]), true));
-                                }
+                                this.m_ID_cache[row[0].ToString()].StatsID = Convert.ToInt32(row[2]);
+                            }
+                        }
+                        else
+                        {
+                            if (row[2] == Convert.DBNull)
+                            {
+                                this.m_ID_cache.Add(row[0].ToString(), new C_ID_Cache(0, Convert.ToInt32(row[1]), true));
+                            }
+                            else
+                            {
+                                this.m_ID_cache.Add(row[0].ToString(), new C_ID_Cache(Convert.ToInt32(row[2]), Convert.ToInt32(row[1]), true));
                             }
                         }
                     }
@@ -1152,14 +1044,13 @@ namespace PRoConEvents
                 return;
             }
             this.DebugInfo("Trace", "UpdateCurrentPlayerTable");
-            bool success = false;
-            int attemptCount = 0;
+            Boolean success = false;
+            Int32 attemptCount = 0;
             try
             {
                 using (MySqlConnection DBConnection = new MySqlConnection(this.DBConnectionStringBuilder()))
                 {
-                    string deleteSQL = "DELETE FROM " + this.tbl_currentplayers + " WHERE ServerID = @ServerID";
-                    StringBuilder InsertSQL = new StringBuilder("INSERT INTO " + this.tbl_currentplayers + " (ServerID, SoldierName, ClanTag ,EA_GUID, PB_GUID, Score, Kills, Deaths, Headshots, Suicide, TeamID, SquadID, PlayerJoined, Ping, IP_aton, CountryCode, Killstreak, Deathstreak, GlobalRank ) VALUES ");
+                    String deleteSQL = "DELETE FROM " + this.tbl_currentplayers + " WHERE ServerID = @ServerID";
                     MySqlConnector.MySqlTransaction Tx = null;
 
                     DBConnection.Open();
@@ -1171,92 +1062,84 @@ namespace PRoConEvents
                             //Start of the Transaction
                             Tx = DBConnection.BeginTransaction();
 
-                            using (MySqlCommand OdbcCom = new MySqlCommand(deleteSQL, DBConnection, Tx))
-                            {
-                                OdbcCom.Parameters.AddWithValue("@ServerID", this.ServerID);
-                                OdbcCom.ExecuteNonQuery();
-                            }
+                            DBConnection.Execute(deleteSQL, new { ServerID = this.ServerID }, transaction: Tx);
+
                             if (lstPlayers.Count > 0)
                             {
-                                int i = 0;
+                                StringBuilder InsertSQL = new StringBuilder("INSERT INTO " + this.tbl_currentplayers + " (ServerID, SoldierName, ClanTag ,EA_GUID, PB_GUID, Score, Kills, Deaths, Headshots, Suicide, TeamID, SquadID, PlayerJoined, Ping, IP_aton, CountryCode, Killstreak, Deathstreak, GlobalRank ) VALUES ");
+                                DynamicParameters dynParams = new DynamicParameters();
+                                dynParams.Add("ServerID", this.ServerID);
+                                Int32 i = 0;
                                 foreach (CPlayerInfo cpiPlayer in lstPlayers)
                                 {
                                     InsertSQL.Append("( @ServerID, @SoldierName" + i + ",@ClanTag" + i + ", @EA_GUID" + i + ", @PB_GUID" + i + ", @Score" + i + ", @Kills" + i + ", @Deaths" + i + ", @Suicide" + i + ", @Headshots" + i + ",@TeamID" + i + ",@SquadID" + i + " ,@PlayerJoined" + i + ",@Ping" + i + ", INET_ATON( @IP_aton" + i + ")" + ",@CountryCode" + i + ",@Killstreak" + i + ",@Deathstreak" + i + ",@GlobalRank" + i + "),");
+
+                                    dynParams.Add("SoldierName" + i, cpiPlayer.SoldierName);
+                                    dynParams.Add("ClanTag" + i, cpiPlayer.ClanTag + "");
+                                    dynParams.Add("EA_GUID" + i, cpiPlayer.GUID);
+                                    if (this.StatsTracker.ContainsKey(cpiPlayer.SoldierName) == true)
+                                    {
+                                        dynParams.Add("PB_GUID" + i, this.StatsTracker[cpiPlayer.SoldierName].Guid);
+                                    }
+                                    else
+                                    {
+                                        dynParams.Add("PB_GUID" + i, ""); //placeholder
+                                    }
+                                    dynParams.Add("Score" + i, cpiPlayer.Score);
+                                    dynParams.Add("Kills" + i, cpiPlayer.Kills);
+                                    dynParams.Add("Deaths" + i, cpiPlayer.Deaths);
+                                    if (this.StatsTracker.ContainsKey(cpiPlayer.SoldierName) == true)
+                                    {
+                                        dynParams.Add("Headshots" + i, this.StatsTracker[cpiPlayer.SoldierName].Headshots);
+                                        dynParams.Add("PlayerJoined" + i, this.StatsTracker[cpiPlayer.SoldierName].Playerjoined);
+                                        dynParams.Add("CountryCode" + i, this.StatsTracker[cpiPlayer.SoldierName].PlayerCountryCode);
+                                        dynParams.Add("Killstreak" + i, this.StatsTracker[cpiPlayer.SoldierName].Killstreak);
+                                        dynParams.Add("Deathstreak" + i, this.StatsTracker[cpiPlayer.SoldierName].Deathstreak);
+                                        dynParams.Add("Suicide" + i, this.StatsTracker[cpiPlayer.SoldierName].Suicides);
+
+                                        // Check if String is empty or null. If it is then send a 0.0.0.0 instead for ip address
+                                        if (String.IsNullOrEmpty(this.StatsTracker[cpiPlayer.SoldierName].IP.Trim()))
+                                        {
+                                            dynParams.Add("IP_aton" + i, "0.0.0.0");
+                                        }
+                                        else
+                                        {
+                                            dynParams.Add("IP_aton" + i, this.StatsTracker[cpiPlayer.SoldierName].IP.Trim());
+                                        }
+                                    }
+                                    else
+                                    {
+                                        dynParams.Add("Headshots" + i, 0); //Headshot placeholder
+                                        dynParams.Add("PlayerJoined" + i, MyDateTime.Now);
+                                        dynParams.Add("CountryCode" + i, "");
+                                        dynParams.Add("Killstreak" + i, 0);
+                                        dynParams.Add("Deathstreak" + i, 0);
+                                        dynParams.Add("Suicide" + i, 0);
+                                        dynParams.Add("IP_aton" + i, "0.0.0.0");
+                                    }
+                                    dynParams.Add("TeamID" + i, cpiPlayer.TeamID);
+                                    dynParams.Add("SquadID" + i, cpiPlayer.SquadID);
+                                    if (cpiPlayer.Ping >= 0 && cpiPlayer.Ping < 65000)
+                                    {
+                                        dynParams.Add("Ping" + i, cpiPlayer.Ping);
+                                    }
+                                    else
+                                    {
+                                        dynParams.Add("Ping" + i, 0);
+                                    }
+                                    if (cpiPlayer.Rank >= 0 && cpiPlayer.Rank < 6500)
+                                    {
+                                        dynParams.Add("GlobalRank" + i, cpiPlayer.Rank);
+                                    }
+                                    else
+                                    {
+                                        dynParams.Add("GlobalRank" + i, 0);
+                                    }
+                                    //Increment Index
                                     i++;
                                 }
                                 InsertSQL.Length = InsertSQL.Length - 1;
-                                using (MySqlCommand OdbcCom = new MySqlCommand(InsertSQL.ToString(), DBConnection, Tx))
-                                {
-                                    i = 0;
-                                    OdbcCom.Parameters.AddWithValue("@ServerID", this.ServerID);
-                                    foreach (CPlayerInfo cpiPlayer in lstPlayers)
-                                    {
-                                        OdbcCom.Parameters.AddWithValue("@SoldierName" + i, cpiPlayer.SoldierName);
-                                        OdbcCom.Parameters.AddWithValue("@ClanTag" + i, cpiPlayer.ClanTag + "");
-                                        OdbcCom.Parameters.AddWithValue("@EA_GUID" + i, cpiPlayer.GUID);
-                                        if (this.StatsTracker.ContainsKey(cpiPlayer.SoldierName) == true)
-                                        {
-                                            OdbcCom.Parameters.AddWithValue("@PB_GUID" + i, this.StatsTracker[cpiPlayer.SoldierName].Guid);
-                                        }
-                                        else
-                                        {
-                                            OdbcCom.Parameters.AddWithValue("@PB_GUID" + i, ""); //placeholder
-                                        }
-                                        OdbcCom.Parameters.AddWithValue("@Score" + i, cpiPlayer.Score);
-                                        OdbcCom.Parameters.AddWithValue("@Kills" + i, cpiPlayer.Kills);
-                                        OdbcCom.Parameters.AddWithValue("@Deaths" + i, cpiPlayer.Deaths);
-                                        if (this.StatsTracker.ContainsKey(cpiPlayer.SoldierName) == true)
-                                        {
-                                            OdbcCom.Parameters.AddWithValue("@Headshots" + i, this.StatsTracker[cpiPlayer.SoldierName].Headshots);
-                                            OdbcCom.Parameters.AddWithValue("@PlayerJoined" + i, this.StatsTracker[cpiPlayer.SoldierName].Playerjoined);
-                                            OdbcCom.Parameters.AddWithValue("@CountryCode" + i, this.StatsTracker[cpiPlayer.SoldierName].PlayerCountryCode);
-                                            OdbcCom.Parameters.AddWithValue("@Killstreak" + i, this.StatsTracker[cpiPlayer.SoldierName].Killstreak);
-                                            OdbcCom.Parameters.AddWithValue("@Deathstreak" + i, this.StatsTracker[cpiPlayer.SoldierName].Deathstreak);
-                                            OdbcCom.Parameters.AddWithValue("@Suicide" + i, this.StatsTracker[cpiPlayer.SoldierName].Suicides);
-
-                                            // Check if string is empty or null. If it is then send a 0.0.0.0 instead for ip address
-                                            if (string.IsNullOrEmpty(this.StatsTracker[cpiPlayer.SoldierName].IP.Trim()))
-                                            {
-                                                OdbcCom.Parameters.AddWithValue("@IP_aton" + i, "0.0.0.0");
-                                            }
-                                            else
-                                            {
-                                                OdbcCom.Parameters.AddWithValue("@IP_aton" + i, this.StatsTracker[cpiPlayer.SoldierName].IP.Trim());
-                                            }
-                                        }
-                                        else
-                                        {
-                                            OdbcCom.Parameters.AddWithValue("@Headshots" + i, 0); //Headshot placeholder
-                                            OdbcCom.Parameters.AddWithValue("@PlayerJoined" + i, MyDateTime.Now);
-                                            OdbcCom.Parameters.AddWithValue("@CountryCode" + i, "");
-                                            OdbcCom.Parameters.AddWithValue("@Killstreak" + i, 0);
-                                            OdbcCom.Parameters.AddWithValue("@Deathstreak" + i, 0);
-                                            OdbcCom.Parameters.AddWithValue("@Suicide" + i, 0);
-                                            OdbcCom.Parameters.AddWithValue("@IP_aton" + i, "0.0.0.0");
-                                        }
-                                        OdbcCom.Parameters.AddWithValue("@TeamID" + i, cpiPlayer.TeamID);
-                                        OdbcCom.Parameters.AddWithValue("@SquadID" + i, cpiPlayer.SquadID);
-                                        if (cpiPlayer.Ping >= 0 && cpiPlayer.Ping < 65000)
-                                        {
-                                            OdbcCom.Parameters.AddWithValue("@Ping" + i, cpiPlayer.Ping);
-                                        }
-                                        else
-                                        {
-                                            OdbcCom.Parameters.AddWithValue("@Ping" + i, 0);
-                                        }
-                                        if (cpiPlayer.Rank >= 0 && cpiPlayer.Rank < 6500)
-                                        {
-                                            OdbcCom.Parameters.AddWithValue("@GlobalRank" + i, cpiPlayer.Rank);
-                                        }
-                                        else
-                                        {
-                                            OdbcCom.Parameters.AddWithValue("@GlobalRank" + i, 0);
-                                        }
-                                        //Increment Index
-                                        i++;
-                                    }
-                                    OdbcCom.ExecuteNonQuery();
-                                }
+                                DBConnection.Execute(InsertSQL.ToString(), dynParams, transaction: Tx);
                             }
                             Tx.Commit();
                             success = true;
@@ -1291,7 +1174,7 @@ namespace PRoConEvents
                             }
                         }
                     }
-                    //Reset bool and counter
+                    //Reset Boolean and counter
                     attemptCount = 0;
                     success = false;
                     try
@@ -1319,55 +1202,25 @@ namespace PRoConEvents
             {
                 //return;
                 this.DebugInfo("Trace", "getUpdateServerID");
-                /*
-                this.DebugInfo("Trace", "ExternalGameIpandPort: " + this.m_strHostName + ":" + this.m_strPort);
-                this.DebugInfo("Trace","ExternalGameIpandPort: "+ csiServerInfo.ExternalGameIpandPort);
-                this.DebugInfo("Trace","ServerName: "+csiServerInfo.ServerName);
-                this.DebugInfo("Trace","ConnectionState: "+csiServerInfo.ConnectionState);
-                this.DebugInfo("Trace","CurrentRound: "+csiServerInfo.CurrentRound.ToString());
-                //this.DebugInfo("Trace","GameMod: "+csiServerInfo.GameMod);
-                this.DebugInfo("Trace","GameMode: "+csiServerInfo.GameMode);
-                this.DebugInfo("Trace","JoinQueueEnabled: "+csiServerInfo.JoinQueueEnabled);
-                this.DebugInfo("Trace","Map: "+csiServerInfo.Map);
-                this.DebugInfo("Trace","Mappack: "+csiServerInfo.Mappack);
-                this.DebugInfo("Trace","MaxPlayerCount: "+csiServerInfo.MaxPlayerCount);
-                this.DebugInfo("Trace","Passworded: "+csiServerInfo.Passworded.ToString());
-                this.DebugInfo("Trace","PlayerCount: "+csiServerInfo.PlayerCount);
-                this.DebugInfo("Trace","Punkbuster: "+csiServerInfo.PunkBuster.ToString());
-                this.DebugInfo("Trace","PunkBusterVersion: "+csiServerInfo.PunkBusterVersion);
-                this.DebugInfo("Trace","Ranked: "+csiServerInfo.Ranked.ToString());
-                this.DebugInfo("Trace","RoundTime: "+csiServerInfo.RoundTime.ToString());
-                this.DebugInfo("Trace","ServerRegion: "+csiServerInfo.ServerRegion);
-                this.DebugInfo("Trace","ServerUptime: "+csiServerInfo.ServerUptime.ToString());
-                
-                this.DebugInfo("Trace","TotalRounds: "+csiServerInfo.TotalRounds);
-                
-                */
-                //this.DebugInfo("Trace", "TeamScores: " + csiServerInfo.TeamScores.Count.ToString());
-
                 this.tablebuilder();
                 DataTable resultTable;
-                string SQL = String.Empty;
-                int attemptCount = 0;
-                bool success = false;
+                String SQL = String.Empty;
+                Int32 attemptCount = 0;
+                Boolean success = false;
                 using (MySqlConnection DBConnection = new MySqlConnection(this.DBConnectionStringBuilder()))
                 {
                     MySqlConnector.MySqlTransaction Tx = null;
                     try
                     {
                         DBConnection.Open();
-                        using (MySqlCommand MyCommand = new MySqlCommand("SELECT `ServerID` FROM " + this.tbl_server + @" WHERE IP_Address = @IP_Address"))
+                        String sqlSelectServer = "SELECT `ServerID` FROM " + this.tbl_server + @" WHERE IP_Address = @IP_Address";
+                        resultTable = this.SQLquery(sqlSelectServer, new { IP_Address = this.m_strHostName + ":" + this.m_strPort });
+                        if (resultTable.Rows != null)
                         {
-                            MyCommand.Parameters.AddWithValue("@IP_Address", this.m_strHostName + ":" + this.m_strPort);
-                            resultTable = this.SQLquery(MyCommand);
-                            if (resultTable.Rows != null)
+                            foreach (DataRow row in resultTable.Rows)
                             {
-                                foreach (DataRow row in resultTable.Rows)
-                                {
-                                    //this.ServerID = Convert.ToInt32(row[0]);
-                                    int.TryParse(row[0].ToString(), out this.ServerID);
-                                    this.DebugInfo("Trace", "DB returns ServerID = " + this.ServerID);
-                                }
+                                Int32.TryParse(row[0].ToString(), out this.ServerID);
+                                this.DebugInfo("Trace", "DB returns ServerID = " + this.ServerID);
                             }
                         }
                         if (ServerID <= 0)
@@ -1384,6 +1237,7 @@ namespace PRoConEvents
                             try
                             {
                                 Tx = DBConnection.BeginTransaction();
+                                Int32 lastInsertId = 0;
                                 using (MySqlCommand MySqlCom = new MySqlCommand(SQL, DBConnection, Tx))
                                 {
                                     MySqlCom.Parameters.AddWithValue("@IP_Address", this.m_strHostName + ":" + this.m_strPort);
@@ -1397,29 +1251,19 @@ namespace PRoConEvents
                                     MySqlCom.ExecuteNonQuery();
                                     if (ServerID == 0)
                                     {
-                                        int.TryParse(MySqlCom.LastInsertedId.ToString(), out this.ServerID);
+                                        Int32.TryParse(MySqlCom.LastInsertedId.ToString(), out this.ServerID);
                                     }
                                 }
                                 if (ServerID > 0 && this.m_enableCurrentPlayerstatsTable == enumBoolYesNo.Yes && csiServerInfo.TeamScores.Count > 0)
                                 {
-                                    string ScoreSQL = "DELETE FROM `" + this.tbl_teamscores + "` WHERE `ServerID` = @ServerID";
-                                    using (MySqlCommand MySqlCom = new MySqlCommand(ScoreSQL, DBConnection, Tx))
-                                    {
-                                        MySqlCom.Parameters.AddWithValue("@ServerID", ServerID);
-                                        MySqlCom.ExecuteNonQuery();
-                                    }
+                                    DBConnection.Execute("DELETE FROM `" + this.tbl_teamscores + "` WHERE `ServerID` = @ServerID",
+                                        new { ServerID = this.ServerID }, transaction: Tx);
+
                                     foreach (TeamScore teamscore in csiServerInfo.TeamScores)
                                     {
-                                        //this.DebugInfo("Trace", "Update Score Table TeamID: " + teamscore.TeamID );
-                                        ScoreSQL = "INSERT INTO `" + this.tbl_teamscores + "` (`ServerID`,`TeamID`,`Score`,`WinningScore`) VALUES(@ServerID, @TeamID, @Score, @WinningScore)";
-                                        using (MySqlCommand MySqlCom = new MySqlCommand(ScoreSQL, DBConnection, Tx))
-                                        {
-                                            MySqlCom.Parameters.AddWithValue("@ServerID", ServerID);
-                                            MySqlCom.Parameters.AddWithValue("@TeamID", teamscore.TeamID);
-                                            MySqlCom.Parameters.AddWithValue("@Score", teamscore.Score);
-                                            MySqlCom.Parameters.AddWithValue("@WinningScore", teamscore.WinningScore);
-                                            MySqlCom.ExecuteNonQuery();
-                                        }
+                                        DBConnection.Execute("INSERT INTO `" + this.tbl_teamscores + "` (`ServerID`,`TeamID`,`Score`,`WinningScore`) VALUES(@ServerID, @TeamID, @Score, @WinningScore)",
+                                            new { ServerID = this.ServerID, TeamID = teamscore.TeamID, Score = teamscore.Score, WinningScore = teamscore.WinningScore },
+                                            transaction: Tx);
                                     }
                                 }
                                 Tx.Commit();
@@ -1475,103 +1319,73 @@ namespace PRoConEvents
             try
             {
                 //retrycount
-                int attemptCount = 0;
-                bool success = false;
+                Int32 attemptCount = 0;
+                Boolean success = false;
 
-                //ScoreRanking per server
-                /*
-                string sqlupdate1 = @"UPDATE " + this.tbl_playerstats + @" tps
-                                    INNER JOIN (
-                                                SELECT(@num := @num+1) AS rankScore, tsp.StatsID
-                                                FROM " + this.tbl_playerstats + @" tps 
-                                                STRAIGHT_JOIN " + this.tbl_server_player + @" tsp ON tsp.StatsID = tps.StatsID ,(SELECT @num := 0) x           
-                                                WHERE tsp.ServerID = ?
-                                                ORDER BY tps.Score DESC, tps.StatsID ASC 
-                                                ) sub 
-                                    ON sub.StatsID = tps.StatsID
-                                    SET tps.rankScore = sub.rankScore
-                                    WHERE sub.rankScore != tps.rankScore";
-                 */
-                string sqlupdate1 = @"UPDATE " + this.tbl_playerstats + @" tps
+                String sqlupdate1 = @"UPDATE " + this.tbl_playerstats + @" tps
                                 INNER JOIN (
                                             SELECT (@num := @num+1) AS rankScore, innersub.StatsID FROM
-                                                (   
+                                                (
                                                     SELECT tsp.StatsID
-                                                    FROM " + this.tbl_playerstats + @" tps 
-                                                    INNER JOIN " + this.tbl_server_player + @" tsp ON tsp.StatsID = tps.StatsID ,(SELECT @num := 0) x           
+                                                    FROM " + this.tbl_playerstats + @" tps
+                                                    INNER JOIN " + this.tbl_server_player + @" tsp ON tsp.StatsID = tps.StatsID ,(SELECT @num := 0) x
                                                     WHERE tsp.ServerID = @ServerID
-                                                    ORDER BY tps.Score DESC, tps.StatsID ASC 
+                                                    ORDER BY tps.Score DESC, tps.StatsID ASC
                                                 ) innersub
-                                            ) sub 
+                                            ) sub
                                 ON sub.StatsID = tps.StatsID
                                 SET tps.rankScore = sub.rankScore
                                 WHERE sub.rankScore != tps.rankScore";
 
-
-                //KillsRanking per server
-                /*
-                string sqlupdate2 = @"UPDATE " + this.tbl_playerstats + @" tps
-                                      INNER JOIN (
-                                                SELECT(@num := @num+1) AS rankKills, tsp.StatsID
-                                                FROM " + this.tbl_playerstats + @" tps 
-                                                STRAIGHT_JOIN " + this.tbl_server_player + @" tsp ON tsp.StatsID = tps.StatsID ,(SELECT @num := 0) y           
-                                                WHERE tsp.ServerID = ?
-                                                ORDER BY tps.Kills DESC, tps.Deaths ASC , tps.StatsID ASC 
-                                                ) sub 
-                                      ON sub.StatsID = tps.StatsID
-                                      SET tps.rankKills = sub.rankKills
-                                      WHERE tps.rankKills != sub.rankKills";
-                 */
-
-                string sqlupdate2 = @"UPDATE " + this.tbl_playerstats + @" tps
+                String sqlupdate2 = @"UPDATE " + this.tbl_playerstats + @" tps
                                 INNER JOIN (
                                             SELECT (@num := @num+1) AS rankKills, innersub.StatsID FROM
-                                                (   
+                                                (
                                                     SELECT tsp.StatsID
-                                                    FROM " + this.tbl_playerstats + @" tps 
-                                                    INNER JOIN " + this.tbl_server_player + @" tsp ON tsp.StatsID = tps.StatsID ,(SELECT @num := 0) x           
+                                                    FROM " + this.tbl_playerstats + @" tps
+                                                    INNER JOIN " + this.tbl_server_player + @" tsp ON tsp.StatsID = tps.StatsID ,(SELECT @num := 0) x
                                                     WHERE tsp.ServerID = @ServerID
-                                                    ORDER BY tps.Kills DESC, tps.Deaths ASC , tps.StatsID ASC 
+                                                    ORDER BY tps.Kills DESC, tps.Deaths ASC , tps.StatsID ASC
 
                                                 ) innersub
-                                            ) sub 
+                                            ) sub
                                 ON sub.StatsID = tps.StatsID
                                 SET tps.rankKills = sub.rankKills
                                 WHERE sub.rankKills != tps.rankKills";
 
                 // Global Updates
-                string sqlInsert = @"INSERT INTO " + this.tbl_playerrank + @" (PlayerID, ServerGroup)
+                String sqlInsert = @"INSERT INTO " + this.tbl_playerrank + @" (PlayerID, ServerGroup)
                                     SELECT PlayerID, (" + this.intServerGroup + @") AS ServerGroup
-                                    FROM " + this.tbl_playerdata + @" 
+                                    FROM " + this.tbl_playerdata + @"
                                     WHERE PlayerID NOT IN (SELECT PlayerID FROM " + this.tbl_playerrank + @" WHERE ServerGroup = @ServerGroup)";
 
 
-                string sqlupdate3 = @"  UPDATE " + this.tbl_playerrank + @" tpr
+                String sqlupdate3 = @"  UPDATE " + this.tbl_playerrank + @" tpr
                                     INNER JOIN (SELECT (@num := @num + 1) AS rankKills, sub1.PlayerID ,sub1.ServerGroup
                                                       FROM(SELECT tsp.PlayerID, ts.ServerGroup
                                                            FROM " + this.tbl_server_player + @" tsp
                                                            INNER JOIN " + this.tbl_server + @" ts ON tsp.ServerID = ts.ServerID
-                                                           INNER JOIN " + this.tbl_playerstats + @" tps  ON  tsp.StatsID = tps.StatsID ,(SELECT @num := 0) x 
+                                                           INNER JOIN " + this.tbl_playerstats + @" tps  ON  tsp.StatsID = tps.StatsID ,(SELECT @num := 0) x
                                                            WHERE ts.ServerGroup = @ServerGroup
-                                                           GROUP BY tsp.PlayerID, ts.ServerGroup 
-                                                           ORDER BY SUM(tps.Kills) DESC, SUM(tps.Deaths) ASC, tsp.PlayerID ASC  
-                                                     ) sub1 
+                                                           GROUP BY tsp.PlayerID, ts.ServerGroup
+                                                           ORDER BY SUM(tps.Kills) DESC, SUM(tps.Deaths) ASC, tsp.PlayerID ASC
+                                                     ) sub1
                                                 ) sub
                                     ON sub.PlayerID = tpr.PlayerID
                                     SET tpr.rankKills = sub.rankKills
                                     WHERE tpr.rankKills != sub.rankKills AND sub.ServerGroup = tpr.ServerGroup";
 
 
-                string sqlupdate4 = @"  UPDATE " + this.tbl_playerrank + @" tpr
+                String sqlupdate4 = @"  UPDATE " + this.tbl_playerrank + @" tpr
                                     INNER JOIN (SELECT (@num := @num + 1) AS rankScore, sub1.PlayerID ,sub1.ServerGroup
                                                       FROM(SELECT tsp.PlayerID, ts.ServerGroup
                                                            FROM " + this.tbl_server_player + @" tsp
-                                                           INNER JOIN " + this.tbl_server + @" ts ON tsp.ServerID = ts.ServerID 
+                                                           INNER JOIN " + this.tbl_server + @" ts ON tsp.ServerID = ts.ServerID
                                                            INNER JOIN " + this.tbl_playerstats + @" tps  ON  tsp.StatsID = tps.StatsID ,(SELECT @num := 0) y
                                                            WHERE ts.ServerGroup = @ServerGroup
-                                                           GROUP BY tsp.PlayerID, ts.ServerGroup 
-                                                           ORDER BY SUM(tps.Score) DESC, tsp.PlayerID ASC  
-                                                     ) sub1 
+                                                           GROUP BY tsp.PlayerID, ts.ServerGroup
+                                                           ORDER BY SUM(tps.Score) DESC, tsp.PlayerID ASC
+                                                     ) sub1
                                                 ) sub
                                     ON sub.PlayerID = tpr.PlayerID AND sub.ServerGroup = tpr.ServerGroup
                                     SET tpr.rankScore = sub.rankScore
@@ -1595,11 +1409,7 @@ namespace PRoConEvents
                                 try
                                 {
                                     Tx = Con.BeginTransaction();
-                                    using (MySqlCommand Command = new MySqlCommand(sqlupdate1, Con, Tx))
-                                    {
-                                        Command.Parameters.AddWithValue("@ServerID", this.ServerID);
-                                        Command.ExecuteNonQuery();
-                                    }
+                                    Con.Execute(sqlupdate1, new { ServerID = this.ServerID }, transaction: Tx);
                                     //Commit
                                     Tx.Commit();
                                     success = true;
@@ -1638,11 +1448,7 @@ namespace PRoConEvents
                                 {
                                     //Start new Transaction
                                     Tx = Con.BeginTransaction();
-                                    using (MySqlCommand Command = new MySqlCommand(sqlupdate2, Con, Tx))
-                                    {
-                                        Command.Parameters.AddWithValue("@ServerID", this.ServerID);
-                                        Command.ExecuteNonQuery();
-                                    }
+                                    Con.Execute(sqlupdate2, new { ServerID = this.ServerID }, transaction: Tx);
                                     //Commit
                                     Tx.Commit();
                                     success = true;
@@ -1684,11 +1490,7 @@ namespace PRoConEvents
                                 {
                                     //Start new Transaction
                                     Tx = Con.BeginTransaction();
-                                    using (MySqlCommand Command = new MySqlCommand(sqlInsert, Con, Tx))
-                                    {
-                                        Command.Parameters.AddWithValue("@ServerGroup", this.intServerGroup);
-                                        Command.ExecuteNonQuery();
-                                    }
+                                    Con.Execute(sqlInsert, new { ServerGroup = this.intServerGroup }, transaction: Tx);
                                     //Commit
                                     Tx.Commit();
                                     success = true;
@@ -1727,11 +1529,7 @@ namespace PRoConEvents
                                 {
                                     //Start new Transaction
                                     Tx = Con.BeginTransaction();
-                                    using (MySqlCommand Command = new MySqlCommand(sqlupdate3, Con, Tx))
-                                    {
-                                        Command.Parameters.AddWithValue("@ServerGroup", this.intServerGroup);
-                                        Command.ExecuteNonQuery();
-                                    }
+                                    Con.Execute(sqlupdate3, new { ServerGroup = this.intServerGroup }, transaction: Tx);
                                     //Commit
                                     Tx.Commit();
                                     success = true;
@@ -1770,11 +1568,7 @@ namespace PRoConEvents
                                 {
                                     //Start new Transaction
                                     Tx = Con.BeginTransaction();
-                                    using (MySqlCommand Command = new MySqlCommand(sqlupdate4, Con, Tx))
-                                    {
-                                        Command.Parameters.AddWithValue("@ServerGroup", this.intServerGroup);
-                                        Command.ExecuteNonQuery();
-                                    }
+                                    Con.Execute(sqlupdate4, new { ServerGroup = this.intServerGroup }, transaction: Tx);
                                     Tx.Commit();
                                     success = true;
                                 }
@@ -1889,7 +1683,7 @@ namespace PRoConEvents
         public void generateWeaponList()
         {
             this.DebugInfo("Trace", "generateWeaponList");
-            List<string> weapList = new List<string>();
+            List<String> weapList = new List<String>();
             this.weaponDic.Clear();
             this.DamageClass.Clear();
             try
@@ -1897,14 +1691,14 @@ namespace PRoConEvents
                 WeaponDictionary weapons = this.GetWeaponDefines();
                 foreach (PRoCon.Core.Players.Items.Weapon weapon in weapons)
                 {
-                    string[] weaponName = Regex.Replace(weapon.Name.Replace("Weapons/", "").Replace("Gadgets/", ""), @"XP\d_", "").Split('/');
+                    String[] weaponName = System.Text.RegularExpressions.Regex.Replace(weapon.Name.Replace("Weapons/", "").Replace("Gadgets/", ""), @"XP\d_", "").Split('/');
                     if (weapList.Contains(weaponName[0].Replace(' ', '_').Replace(".", "").Replace("U_", "")) == false)
                     {
                         weapList.Add(weaponName[0].Replace(' ', '_').Replace(".", "").Replace("U_", ""));
                     }
                     if (this.weaponDic.ContainsKey(weapon.Damage.ToString()) == false)
                     {
-                        this.weaponDic.Add(weapon.Damage.ToString(), new Dictionary<string, CStats.CUsedWeapon>());
+                        this.weaponDic.Add(weapon.Damage.ToString(), new Dictionary<String, CStats.CUsedWeapon>());
                     }
                     if (this.weaponDic[weapon.Damage.ToString()].ContainsKey(weapon.Name) == false)
                     {
@@ -1918,16 +1712,16 @@ namespace PRoConEvents
             {
                 this.DebugInfo("Error", "generateWeaponList: " + e.ToString());
             }
-            foreach (KeyValuePair<string, Dictionary<string, CStats.CUsedWeapon>> branch in this.weaponDic)
+            foreach (KeyValuePair<String, Dictionary<String, CStats.CUsedWeapon>> branch in this.weaponDic)
             {
-                foreach (KeyValuePair<string, CStats.CUsedWeapon> leap in branch.Value)
+                foreach (KeyValuePair<String, CStats.CUsedWeapon> leap in branch.Value)
                 {
                     this.DebugInfo("Trace", "Weaponlist: DamageType: " + branch.Key + " Name: " + leap.Key);
                 }
             }
         }
 
-        public void DebugInfo(string debuglevel, string DebugMessage)
+        public void DebugInfo(String debuglevel, String DebugMessage)
         {
             switch (this.GlobalDebugMode)
             {
@@ -1953,7 +1747,7 @@ namespace PRoConEvents
                     }
                     break;
             }
-            // Post error Message in correct Format 
+            // Post error Message in correct Format
             if (String.Equals(debuglevel, "Trace"))
             {
                 this.ExecuteCommand("procon.protected.pluginconsole.write", "[Statslogger]Trace: " + DebugMessage);
@@ -1972,43 +1766,38 @@ namespace PRoConEvents
             }
         }
 
-        private int GetGameIDfromDB(string strGame)
+        private Int32 GetGameIDfromDB(String strGame)
         {
             this.DebugInfo("Trace", "GetGameIDfromDB Game: " + strGame);
-            int intGameID = 0;
+            Int32 intGameID = 0;
             try
             {
-                string sqlSelect = "SELECT `GameID` FROM `" + this.tbl_games + @"` WHERE `Name` = @Name";
-                using (MySqlCommand SelectCommand = new MySqlCommand(sqlSelect))
+                String sqlSelect = "SELECT `GameID` FROM `" + this.tbl_games + @"` WHERE `Name` = @Name";
+                DataTable result = this.SQLquery(sqlSelect, new { Name = strGame });
+                if (result.Rows.Count != 0)
                 {
-                    SelectCommand.Parameters.AddWithValue("@Name", strGame);
+                    intGameID = Convert.ToInt32(result.Rows[0][0]);
+                }
+                else
+                {
+                    this.DebugInfo("Trace", "GetGameIDfromDB Game:  no gameID found");
+                    //Insert Game
+                    using (MySqlConnection Con = new MySqlConnection(this.DBConnectionStringBuilder()))
+                    {
+                        Con.Open();
+                        MySqlTransaction Transaction = null;
+                        //Start of the Transaction
+                        Transaction = Con.BeginTransaction();
 
-                    DataTable result = this.SQLquery(SelectCommand);
-                    if (result.Rows.Count != 0)
-                    {
-                        intGameID = Convert.ToInt32(result.Rows[0][0]);
-                    }
-                    else
-                    {
-                        this.DebugInfo("Trace", "GetGameIDfromDB Game:  no gameID found");
-                        //Insert Game
-                        using (MySqlConnection Con = new MySqlConnection(this.DBConnectionStringBuilder()))
+                        String SQL = @"INSERT INTO `" + this.tbl_games + @"` (`Name`) VALUES (@Name)";
+                        using (MySqlCommand MyCom = new MySqlCommand(SQL, Con, Transaction))
                         {
-                            Con.Open();
-                            MySqlTransaction Transaction = null;
-                            //Start of the Transaction
-                            Transaction = Con.BeginTransaction();
-
-                            string SQL = @"INSERT INTO `" + this.tbl_games + @"` (`Name`) VALUES (@Name)";
-                            using (MySqlCommand MyCom = new MySqlCommand(SQL, Con, Transaction))
-                            {
-                                MyCom.Parameters.AddWithValue("@Name", this.strServerGameType);
-                                MyCom.ExecuteNonQuery();
-                                this.DebugInfo("Trace", "GetGameIDfromDB LastInsertedId: " + MyCom.LastInsertedId.ToString());
-                                intGameID = Convert.ToInt32(MyCom.LastInsertedId);
-                            }
-                            Transaction.Commit();
+                            MyCom.Parameters.AddWithValue("@Name", this.strServerGameType);
+                            MyCom.ExecuteNonQuery();
+                            this.DebugInfo("Trace", "GetGameIDfromDB LastInsertedId: " + MyCom.LastInsertedId.ToString());
+                            intGameID = Convert.ToInt32(MyCom.LastInsertedId);
                         }
+                        Transaction.Commit();
                     }
                 }
             }
@@ -2025,24 +1814,19 @@ namespace PRoConEvents
             return intGameID;
         }
 
-        private Dictionary<string, int> GetWeaponMappingfromDB()
+        private Dictionary<String, Int32> GetWeaponMappingfromDB()
         {
-            Dictionary<string, int> mappingDic = new Dictionary<string, int>();
+            Dictionary<String, Int32> mappingDic = new Dictionary<String, Int32>();
             try
             {
-                string sqlSelect = "SELECT `WeaponID`,`Fullname` FROM `" + this.tbl_weapons + @"` WHERE `GameID` = @GameID";
-                using (MySqlCommand SelectCommand = new MySqlCommand(sqlSelect))
+                String sqlSelect = "SELECT `WeaponID`,`Fullname` FROM `" + this.tbl_weapons + @"` WHERE `GameID` = @GameID";
+                DataTable result = this.SQLquery(sqlSelect, new { GameID = this.intServerGameType_ID });
+                if (result != null || result.Rows.Count != 0)
                 {
-                    SelectCommand.Parameters.AddWithValue("@GameID", this.intServerGameType_ID);
-
-                    DataTable result = this.SQLquery(SelectCommand);
-                    if (result != null || result.Rows.Count != 0)
+                    foreach (DataRow row in result.Rows)
                     {
-                        foreach (DataRow row in result.Rows)
-                        {
-                            mappingDic.Add(row["Fullname"].ToString(), Convert.ToInt32(row["WeaponID"]));
-                            this.DebugInfo("Trace", "WeaponMapping: ID: " + Convert.ToInt32(row["WeaponID"]).ToString() + " <--> Weapon:" + row["Fullname"].ToString());
-                        }
+                        mappingDic.Add(row["Fullname"].ToString(), Convert.ToInt32(row["WeaponID"]));
+                        this.DebugInfo("Trace", "WeaponMapping: ID: " + Convert.ToInt32(row["WeaponID"]).ToString() + " <--> Weapon:" + row["Fullname"].ToString());
                     }
                 }
             }

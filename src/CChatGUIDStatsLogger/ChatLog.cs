@@ -22,13 +22,15 @@ using System.Data;
 using System.Text.RegularExpressions;
 using System.Threading;
 
+using Dapper;
+
 using MySqlConnector;
 
 namespace PRoConEvents
 {
     public partial class CChatGUIDStatsLogger
     {
-        private void LogChat(string strSpeaker, string strMessage, string strType)
+        private void LogChat(String strSpeaker, String strMessage, String strType)
         {
             try
             {
@@ -55,7 +57,8 @@ namespace PRoConEvents
                 }
                 if (m_enInstantChatlogging == enumBoolYesNo.Yes)
                 {
-                    string query = "INSERT INTO " + this.tbl_chatlog + @" (logDate, ServerID, logSubset, logSoldierName, logMessage) VALUES (@logDate, @ServerID, @logSubset, @logSoldierName, @logMessage)";
+                    String query = "INSERT INTO " + this.tbl_chatlog + @" (logDate, ServerID, logSubset, logSoldierName, logMessage) VALUES (@logDate, @ServerID, @logSubset, @logSoldierName, @logMessage)";
+                    Object chatParams = new { logDate = MyDateTime.Now, ServerID = this.ServerID, logSubset = strType, logSoldierName = strSpeaker, logMessage = strMessage };
                     this.tablebuilder();
                     if ((m_strHost != null) || (m_strDatabase != null) || (m_strDBPort != null) || (m_strUserName != null) || (m_strPassword != null))
                     {
@@ -68,15 +71,7 @@ namespace PRoConEvents
                                     Connection.Open();
                                     if (Connection.State == ConnectionState.Open)
                                     {
-                                        using (MySqlCommand OdbcCom = new MySqlCommand(query, Connection))
-                                        {
-                                            OdbcCom.Parameters.AddWithValue("@logDate", MyDateTime.Now);
-                                            OdbcCom.Parameters.AddWithValue("@ServerID", this.ServerID);
-                                            OdbcCom.Parameters.AddWithValue("@logSubset", strType);
-                                            OdbcCom.Parameters.AddWithValue("@logSoldierName", strSpeaker);
-                                            OdbcCom.Parameters.AddWithValue("@logMessage", strMessage);
-                                            OdbcCom.ExecuteNonQuery();
-                                        }
+                                        Connection.Execute(query, chatParams);
                                     }
                                     Connection.Close();
                                 }
@@ -107,15 +102,7 @@ namespace PRoConEvents
                                     }
                                     if (MySqlChatCon.State == ConnectionState.Open)
                                     {
-                                        using (MySqlCommand OdbcCom = new MySqlCommand(query, MySqlChatCon))
-                                        {
-                                            OdbcCom.Parameters.AddWithValue("@logDate", MyDateTime.Now);
-                                            OdbcCom.Parameters.AddWithValue("@ServerID", this.ServerID);
-                                            OdbcCom.Parameters.AddWithValue("@logSubset", strType);
-                                            OdbcCom.Parameters.AddWithValue("@logSoldierName", strSpeaker);
-                                            OdbcCom.Parameters.AddWithValue("@logMessage", strMessage);
-                                            OdbcCom.ExecuteNonQuery();
-                                        }
+                                        MySqlChatCon.Execute(query, chatParams);
                                     }
                                 }
                                 catch (MySqlException oe)

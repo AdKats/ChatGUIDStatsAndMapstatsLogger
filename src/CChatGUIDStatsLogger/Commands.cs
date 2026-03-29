@@ -22,6 +22,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Threading;
 
+using Dapper;
+
 using MySqlConnector;
 
 using PRoCon.Core;
@@ -92,14 +94,11 @@ namespace PRoConEvents
                             Connection.Open();
                             if (Connection.State == ConnectionState.Open)
                             {
-                                string query = "SELECT `ServerID` from `" + this.tbl_server + "` LIMIT 1";
-                                using (MySqlCommand command = new MySqlCommand(query, Connection))
+                                String query = "SELECT `ServerID` from `" + this.tbl_server + "` LIMIT 1";
+                                DataTable resultTable = this.SQLquery(query);
+                                if (resultTable.Rows != null)
                                 {
-                                    DataTable resultTable = this.SQLquery(command);
-                                    if (resultTable.Rows != null)
-                                    {
-                                        activeConnection = true;
-                                    }
+                                    activeConnection = true;
                                 }
                             }
                             //Connection automatically closed by end of 'using' clause
@@ -135,7 +134,7 @@ namespace PRoConEvents
                 //Add Error as "no error"
                 response["Error"] = false.ToString();
 
-                //Encode JSON response 
+                //Encode JSON response
                 String JSONResponse = JSON.JsonEncode(response);
 
                 //Send the response
@@ -154,7 +153,7 @@ namespace PRoConEvents
 
         #region In Game Commands
 
-        public void OnCommandStats(string strSpeaker, string strText, MatchCommand mtcCommand, CapturedCommand capCommand, CPlayerSubset subMatchedScope)
+        public void OnCommandStats(String strSpeaker, String strText, MatchCommand mtcCommand, CapturedCommand capCommand, CPlayerSubset subMatchedScope)
         {
             /*
             this.DebugInfo("Trace", "MatchCommand:" + mtcCommand.Command);
@@ -164,7 +163,7 @@ namespace PRoConEvents
             */
             if ((this.m_enLogSTATS == enumBoolYesNo.Yes) && (this.Spamprotection.isAllowed(strSpeaker) == true))
             {
-                string scope = String.Empty;
+                String scope = String.Empty;
                 if (capCommand.ResposeScope.Contains("!") == true)
                 {
                     if (this.m_enSendStatsToAll == enumBoolYesNo.Yes)
@@ -192,11 +191,11 @@ namespace PRoConEvents
             }
         }
 
-        public void OnCommandTop10(string strSpeaker, string strText, MatchCommand mtcCommand, CapturedCommand capCommand, CPlayerSubset subMatchedScope)
+        public void OnCommandTop10(String strSpeaker, String strText, MatchCommand mtcCommand, CapturedCommand capCommand, CPlayerSubset subMatchedScope)
         {
             if ((this.m_enLogSTATS == enumBoolYesNo.Yes) && (this.Spamprotection.isAllowed(strSpeaker) == true))
             {
-                string scope = String.Empty;
+                String scope = String.Empty;
                 if (capCommand.ResposeScope.Contains("!") == true)
                 {
                     if (this.m_enSendStatsToAll == enumBoolYesNo.Yes)
@@ -224,11 +223,11 @@ namespace PRoConEvents
             }
         }
 
-        public void OnCommandDogtags(string strSpeaker, string strText, MatchCommand mtcCommand, CapturedCommand capCommand, CPlayerSubset subMatchedScope)
+        public void OnCommandDogtags(String strSpeaker, String strText, MatchCommand mtcCommand, CapturedCommand capCommand, CPlayerSubset subMatchedScope)
         {
             if ((this.m_enLogSTATS == enumBoolYesNo.Yes) && (this.Spamprotection.isAllowed(strSpeaker) == true))
             {
-                string scope = String.Empty;
+                String scope = String.Empty;
                 if (capCommand.ResposeScope.Contains("!") == true)
                 {
                     if (this.m_enSendStatsToAll == enumBoolYesNo.Yes)
@@ -248,11 +247,11 @@ namespace PRoConEvents
             }
         }
 
-        public void OnCommandSession(string strSpeaker, string strText, MatchCommand mtcCommand, CapturedCommand capCommand, CPlayerSubset subMatchedScope)
+        public void OnCommandSession(String strSpeaker, String strText, MatchCommand mtcCommand, CapturedCommand capCommand, CPlayerSubset subMatchedScope)
         {
             if ((this.m_enLogSTATS == enumBoolYesNo.Yes) && (this.Spamprotection.isAllowed(strSpeaker) == true))
             {
-                string scope = String.Empty;
+                String scope = String.Empty;
                 if (capCommand.ResposeScope.Contains("!") == true)
                 {
                     if (this.m_enSendStatsToAll == enumBoolYesNo.Yes)
@@ -272,11 +271,11 @@ namespace PRoConEvents
             }
         }
 
-        public void OnCommandServerStats(string strSpeaker, string strText, MatchCommand mtcCommand, CapturedCommand capCommand, CPlayerSubset subMatchedScope)
+        public void OnCommandServerStats(String strSpeaker, String strText, MatchCommand mtcCommand, CapturedCommand capCommand, CPlayerSubset subMatchedScope)
         {
             if ((this.m_enLogSTATS == enumBoolYesNo.Yes) && (this.Spamprotection.isAllowed(strSpeaker) == true))
             {
-                string scope = String.Empty;
+                String scope = String.Empty;
                 if (capCommand.ResposeScope.Contains("!") == true)
                 {
                     if (this.m_enSendStatsToAll == enumBoolYesNo.Yes)
@@ -296,11 +295,11 @@ namespace PRoConEvents
             }
         }
 
-        public void OnCommandPlayerOfTheDay(string strSpeaker, string strText, MatchCommand mtcCommand, CapturedCommand capCommand, CPlayerSubset subMatchedScope)
+        public void OnCommandPlayerOfTheDay(String strSpeaker, String strText, MatchCommand mtcCommand, CapturedCommand capCommand, CPlayerSubset subMatchedScope)
         {
             if ((this.m_enLogSTATS == enumBoolYesNo.Yes) && (this.Spamprotection.isAllowed(strSpeaker) == true))
             {
-                string scope = String.Empty;
+                String scope = String.Empty;
                 if (capCommand.ResposeScope.Contains("!") == true)
                 {
                     if (this.m_enSendStatsToAll == enumBoolYesNo.Yes)
@@ -320,11 +319,11 @@ namespace PRoConEvents
             }
         }
 
-        public void OnCommandTop10ForPeriod(string strSpeaker, string strText, MatchCommand mtcCommand, CapturedCommand capCommand, CPlayerSubset subMatchedScope)
+        public void OnCommandTop10ForPeriod(String strSpeaker, String strText, MatchCommand mtcCommand, CapturedCommand capCommand, CPlayerSubset subMatchedScope)
         {
             if ((this.m_enLogSTATS == enumBoolYesNo.Yes) && (this.Spamprotection.isAllowed(strSpeaker) == true))
             {
-                string scope = String.Empty;
+                String scope = String.Empty;
                 if (capCommand.ResposeScope.Contains("!") == true)
                 {
                     if (this.m_enSendStatsToAll == enumBoolYesNo.Yes)

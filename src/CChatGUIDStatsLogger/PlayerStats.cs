@@ -23,6 +23,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 
+using Dapper;
+
 using MySqlConnector;
 
 using PRoCon.Core;
@@ -33,7 +35,7 @@ namespace PRoConEvents
 {
     public partial class CChatGUIDStatsLogger
     {
-        private int GetPlayerTeamID(string strSoldierName)
+        private Int32 GetPlayerTeamID(String strSoldierName)
         {
             int iTeamID = 0; // Neutral Team ID
             if (this.m_dicPlayers.ContainsKey(strSoldierName) == true)
@@ -182,30 +184,23 @@ namespace PRoConEvents
 
                                     if (ChatLog.Count > 0 && MySqlConn.State == ConnectionState.Open)
                                     {
-                                        string ChatSQL = @"INSERT INTO " + this.tbl_chatlog + @" (logDate, ServerID, logSubset, logSoldierName, logMessage) VALUES ";
+                                        String ChatSQL = @"INSERT INTO " + this.tbl_chatlog + @" (logDate, ServerID, logSubset, logSoldierName, logMessage) VALUES ";
                                         lock (ChatLog)
                                         {
-                                            int i = 0;
+                                            Int32 i = 0;
+                                            DynamicParameters chatParams = new DynamicParameters();
                                             foreach (CLogger log in ChatLog)
                                             {
-                                                ChatSQL = string.Concat(ChatSQL, "(@logDate" + i + ", @ServerID" + i + ", @logSubset" + i + ", @logSoldierName" + i + ", @logMessage" + i + "),");
+                                                ChatSQL = String.Concat(ChatSQL, "(@logDate" + i + ", @ServerID" + i + ", @logSubset" + i + ", @logSoldierName" + i + ", @logMessage" + i + "),");
+                                                chatParams.Add("logDate" + i, log.Time);
+                                                chatParams.Add("ServerID" + i, this.ServerID);
+                                                chatParams.Add("logSubset" + i, log.Subset);
+                                                chatParams.Add("logSoldierName" + i, log.Name);
+                                                chatParams.Add("logMessage" + i, log.Message);
                                                 i++;
                                             }
                                             ChatSQL = ChatSQL.Remove(ChatSQL.LastIndexOf(","));
-                                            using (MySqlCommand OdbcCom = new MySqlCommand(ChatSQL, MySqlConn))
-                                            {
-                                                i = 0;
-                                                foreach (CLogger log in ChatLog)
-                                                {
-                                                    OdbcCom.Parameters.AddWithValue("@logDate" + i, log.Time);
-                                                    OdbcCom.Parameters.AddWithValue("@ServerID" + i, this.ServerID);
-                                                    OdbcCom.Parameters.AddWithValue("@logSubset" + i, log.Subset);
-                                                    OdbcCom.Parameters.AddWithValue("@logSoldierName" + i, log.Name);
-                                                    OdbcCom.Parameters.AddWithValue("@logMessage" + i, log.Message);
-                                                    i++;
-                                                }
-                                                OdbcCom.ExecuteNonQuery();
-                                            }
+                                            MySqlConn.Execute(ChatSQL, chatParams);
                                             ChatLog.Clear();
                                         }
                                     }
@@ -213,25 +208,24 @@ namespace PRoConEvents
                                     {
                                         this.DebugInfo("Trace", "Mapstats Write querys");
                                         this.Mapstats.calcMaxMinAvgPlayers();
-                                        string MapSQL = @"INSERT INTO " + tbl_mapstats + @" (ServerID, TimeMapLoad, TimeRoundStarted, TimeRoundEnd, MapName, Gamemode, Roundcount, NumberofRounds, MinPlayers, AvgPlayers, MaxPlayers, PlayersJoinedServer, PlayersLeftServer)
+                                        String MapSQL = @"INSERT INTO " + tbl_mapstats + @" (ServerID, TimeMapLoad, TimeRoundStarted, TimeRoundEnd, MapName, Gamemode, Roundcount, NumberofRounds, MinPlayers, AvgPlayers, MaxPlayers, PlayersJoinedServer, PlayersLeftServer)
 													VALUES (@ServerID, @TimeMapLoad, @TimeRoundStarted, @TimeRoundEnd, @MapName, @Gamemode, @Roundcount, @NumberofRounds, @MinPlayers, @AvgPlayers, @MaxPlayers, @PlayersJoinedServer, @PlayersLeftServer)";
-                                        using (MySqlCommand OdbcCom = new MySqlCommand(MapSQL, MySqlConn))
+                                        MySqlConn.Execute(MapSQL, new
                                         {
-                                            OdbcCom.Parameters.AddWithValue("@ServerID", this.ServerID);
-                                            OdbcCom.Parameters.AddWithValue("@TimeMapLoad", this.Mapstats.TimeMaploaded);
-                                            OdbcCom.Parameters.AddWithValue("@TimeRoundStarted", this.Mapstats.TimeMapStarted);
-                                            OdbcCom.Parameters.AddWithValue("@TimeRoundEnd", this.Mapstats.TimeRoundEnd);
-                                            OdbcCom.Parameters.AddWithValue("@MapName", this.Mapstats.StrMapname);
-                                            OdbcCom.Parameters.AddWithValue("@Gamemode", this.Mapstats.StrGamemode);
-                                            OdbcCom.Parameters.AddWithValue("@Roundcount", this.Mapstats.IntRound);
-                                            OdbcCom.Parameters.AddWithValue("@NumberofRounds", this.Mapstats.IntNumberOfRounds);
-                                            OdbcCom.Parameters.AddWithValue("@MinPlayers", this.Mapstats.IntMinPlayers);
-                                            OdbcCom.Parameters.AddWithValue("@AvgPlayers", this.Mapstats.DoubleAvgPlayers);
-                                            OdbcCom.Parameters.AddWithValue("@MaxPlayers", this.Mapstats.IntMaxPlayers);
-                                            OdbcCom.Parameters.AddWithValue("@PlayersJoinedServer", this.Mapstats.IntplayerjoinedServer);
-                                            OdbcCom.Parameters.AddWithValue("@PlayersLeftServer", this.Mapstats.IntplayerleftServer);
-                                            OdbcCom.ExecuteNonQuery();
-                                        }
+                                            ServerID = this.ServerID,
+                                            TimeMapLoad = this.Mapstats.TimeMaploaded,
+                                            TimeRoundStarted = this.Mapstats.TimeMapStarted,
+                                            TimeRoundEnd = this.Mapstats.TimeRoundEnd,
+                                            MapName = this.Mapstats.StrMapname,
+                                            Gamemode = this.Mapstats.StrGamemode,
+                                            Roundcount = this.Mapstats.IntRound,
+                                            NumberofRounds = this.Mapstats.IntNumberOfRounds,
+                                            MinPlayers = this.Mapstats.IntMinPlayers,
+                                            AvgPlayers = this.Mapstats.DoubleAvgPlayers,
+                                            MaxPlayers = this.Mapstats.IntMaxPlayers,
+                                            PlayersJoinedServer = this.Mapstats.IntplayerjoinedServer,
+                                            PlayersLeftServer = this.Mapstats.IntplayerleftServer
+                                        });
                                     }
                                     if (this.m_enLogSTATS == enumBoolYesNo.Yes && MySqlConn.State == ConnectionState.Open)
                                     {
@@ -271,87 +265,58 @@ namespace PRoConEvents
                                                         }
                                                         if (this.m_ID_cache[kvp.Value.EAGuid].Id >= 1)
                                                         {
-                                                            string UpdatedataSQL = @"UPDATE " + this.tbl_playerdata + @" SET SoldierName = @SoldierName, ClanTag = @ClanTag, PBGUID = @PBGUID, IP_Address = @IP_Address, CountryCode = @CountryCode, GlobalRank = @GlobalRank  WHERE PlayerID = @PlayerID";
-                                                            using (MySqlCommand OdbcCom = new MySqlCommand(UpdatedataSQL, MySqlConn, MySqlTrans))
+                                                            String UpdatedataSQL = @"UPDATE " + this.tbl_playerdata + @" SET SoldierName = @SoldierName, ClanTag = @ClanTag, PBGUID = @PBGUID, IP_Address = @IP_Address, CountryCode = @CountryCode, GlobalRank = @GlobalRank  WHERE PlayerID = @PlayerID";
+                                                            //Update
+                                                            if (GlobalDebugMode.Equals("Trace"))
                                                             {
-                                                                //Update
-                                                                if (GlobalDebugMode.Equals("Trace"))
-                                                                {
-                                                                    this.DebugInfo("Trace", "Update for Player " + kvp.Key);
-                                                                    this.DebugInfo("Trace", "ClanTag " + kvp.Value.ClanTag);
-                                                                    this.DebugInfo("Trace", "SoldierName " + kvp.Key);
-                                                                    this.DebugInfo("Trace", "PBGUID " + kvp.Value.Guid);
-                                                                    this.DebugInfo("Trace", "EAGUID " + kvp.Value.EAGuid);
-                                                                    this.DebugInfo("Trace", "IP_Address " + kvp.Value.IP);
-                                                                    this.DebugInfo("Trace", "CountryCode " + kvp.Value.PlayerCountryCode);
-                                                                    this.DebugInfo("Trace", "GlobalRank " + kvp.Value.GlobalRank);
-                                                                }
-                                                                //OdbcCom.Parameters.AddWithValue("@pr", kvp.Value.ClanTag);
-                                                                OdbcCom.Parameters.AddWithValue("@SoldierName", kvp.Key);
-                                                                if (kvp.Value.ClanTag != null)
-                                                                {
-                                                                    if (kvp.Value.ClanTag.Length > 0)
-                                                                    {
-                                                                        OdbcCom.Parameters.AddWithValue("@ClanTag", kvp.Value.ClanTag);
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        OdbcCom.Parameters.AddWithValue("@ClanTag", Convert.DBNull);
-                                                                    }
-                                                                }
-                                                                else
-                                                                {
-                                                                    OdbcCom.Parameters.AddWithValue("@ClanTag", Convert.DBNull);
-                                                                }
-                                                                OdbcCom.Parameters.AddWithValue("@PBGUID", kvp.Value.Guid);
-                                                                OdbcCom.Parameters.AddWithValue("@IP_Address", kvp.Value.IP);
-                                                                OdbcCom.Parameters.AddWithValue("@CountryCode", kvp.Value.PlayerCountryCode);
-                                                                OdbcCom.Parameters.AddWithValue("@PlayerID", this.m_ID_cache[kvp.Value.EAGuid].Id);
-                                                                OdbcCom.Parameters.AddWithValue("@GlobalRank", kvp.Value.GlobalRank);
-                                                                OdbcCom.ExecuteNonQuery();
+                                                                this.DebugInfo("Trace", "Update for Player " + kvp.Key);
+                                                                this.DebugInfo("Trace", "ClanTag " + kvp.Value.ClanTag);
+                                                                this.DebugInfo("Trace", "SoldierName " + kvp.Key);
+                                                                this.DebugInfo("Trace", "PBGUID " + kvp.Value.Guid);
+                                                                this.DebugInfo("Trace", "EAGUID " + kvp.Value.EAGuid);
+                                                                this.DebugInfo("Trace", "IP_Address " + kvp.Value.IP);
+                                                                this.DebugInfo("Trace", "CountryCode " + kvp.Value.PlayerCountryCode);
+                                                                this.DebugInfo("Trace", "GlobalRank " + kvp.Value.GlobalRank);
                                                             }
+                                                            Object clanTagVal = (kvp.Value.ClanTag != null && kvp.Value.ClanTag.Length > 0) ? (Object)kvp.Value.ClanTag : Convert.DBNull;
+                                                            MySqlConn.Execute(UpdatedataSQL, new
+                                                            {
+                                                                SoldierName = kvp.Key,
+                                                                ClanTag = clanTagVal,
+                                                                PBGUID = kvp.Value.Guid,
+                                                                IP_Address = kvp.Value.IP,
+                                                                CountryCode = kvp.Value.PlayerCountryCode,
+                                                                PlayerID = this.m_ID_cache[kvp.Value.EAGuid].Id,
+                                                                GlobalRank = kvp.Value.GlobalRank
+                                                            }, transaction: MySqlTrans);
                                                         }
                                                         else if (this.m_ID_cache[kvp.Value.EAGuid].Id <= 0)
                                                         {
-                                                            string InsertdataSQL = @"INSERT INTO " + this.tbl_playerdata + @" (ClanTag, SoldierName, PBGUID, GameID, EAGUID, IP_Address, CountryCode, GlobalRank) VALUES(@ClanTag, @SoldierName, @PBGUID, @GameID, @EAGUID, @IP_Address, @CountryCode, @GlobalRank)";
-                                                            using (MySqlCommand OdbcCom = new MySqlCommand(InsertdataSQL, MySqlConn, MySqlTrans))
+                                                            String InsertdataSQL = @"INSERT INTO " + this.tbl_playerdata + @" (ClanTag, SoldierName, PBGUID, GameID, EAGUID, IP_Address, CountryCode, GlobalRank) VALUES(@ClanTag, @SoldierName, @PBGUID, @GameID, @EAGUID, @IP_Address, @CountryCode, @GlobalRank)";
+                                                            //Insert
+                                                            if (GlobalDebugMode.Equals("Trace"))
                                                             {
-                                                                //Insert
-                                                                if (GlobalDebugMode.Equals("Trace"))
-                                                                {
-                                                                    this.DebugInfo("Trace", "Insert for Player " + kvp.Key);
-                                                                    this.DebugInfo("Trace", "ClanTag " + kvp.Value.ClanTag);
-                                                                    this.DebugInfo("Trace", "SoldierName " + kvp.Key);
-                                                                    this.DebugInfo("Trace", "PBGUID " + kvp.Value.Guid);
-                                                                    this.DebugInfo("Trace", "EAGUID " + kvp.Value.EAGuid);
-                                                                    this.DebugInfo("Trace", "IP_Address " + kvp.Value.IP);
-                                                                    this.DebugInfo("Trace", "CountryCode " + kvp.Value.PlayerCountryCode);
-                                                                    this.DebugInfo("Trace", "GlobalRank " + kvp.Value.GlobalRank);
-                                                                }
-                                                                if (kvp.Value.ClanTag != null)
-                                                                {
-                                                                    if (kvp.Value.ClanTag.Length > 0)
-                                                                    {
-                                                                        OdbcCom.Parameters.AddWithValue("@ClanTag", kvp.Value.ClanTag);
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        OdbcCom.Parameters.AddWithValue("@ClanTag", Convert.DBNull);
-                                                                    }
-                                                                }
-                                                                else
-                                                                {
-                                                                    OdbcCom.Parameters.AddWithValue("@ClanTag", Convert.DBNull);
-                                                                }
-                                                                OdbcCom.Parameters.AddWithValue("@SoldierName", kvp.Key);
-                                                                OdbcCom.Parameters.AddWithValue("@PBGUID", kvp.Value.Guid);
-                                                                OdbcCom.Parameters.AddWithValue("@GameID", this.intServerGameType_ID);
-                                                                OdbcCom.Parameters.AddWithValue("@EAGUID", kvp.Value.EAGuid);
-                                                                OdbcCom.Parameters.AddWithValue("@IP_Address", kvp.Value.IP);
-                                                                OdbcCom.Parameters.AddWithValue("@CountryCode", kvp.Value.PlayerCountryCode);
-                                                                OdbcCom.Parameters.AddWithValue("@GlobalRank", kvp.Value.GlobalRank);
-                                                                OdbcCom.ExecuteNonQuery();
+                                                                this.DebugInfo("Trace", "Insert for Player " + kvp.Key);
+                                                                this.DebugInfo("Trace", "ClanTag " + kvp.Value.ClanTag);
+                                                                this.DebugInfo("Trace", "SoldierName " + kvp.Key);
+                                                                this.DebugInfo("Trace", "PBGUID " + kvp.Value.Guid);
+                                                                this.DebugInfo("Trace", "EAGUID " + kvp.Value.EAGuid);
+                                                                this.DebugInfo("Trace", "IP_Address " + kvp.Value.IP);
+                                                                this.DebugInfo("Trace", "CountryCode " + kvp.Value.PlayerCountryCode);
+                                                                this.DebugInfo("Trace", "GlobalRank " + kvp.Value.GlobalRank);
                                                             }
+                                                            Object clanTagVal = (kvp.Value.ClanTag != null && kvp.Value.ClanTag.Length > 0) ? (Object)kvp.Value.ClanTag : Convert.DBNull;
+                                                            MySqlConn.Execute(InsertdataSQL, new
+                                                            {
+                                                                ClanTag = clanTagVal,
+                                                                SoldierName = kvp.Key,
+                                                                PBGUID = kvp.Value.Guid,
+                                                                GameID = this.intServerGameType_ID,
+                                                                EAGUID = kvp.Value.EAGuid,
+                                                                IP_Address = kvp.Value.IP,
+                                                                CountryCode = kvp.Value.PlayerCountryCode,
+                                                                GlobalRank = kvp.Value.GlobalRank
+                                                            }, transaction: MySqlTrans);
                                                         }
                                                     }
                                                 }
@@ -416,15 +381,10 @@ namespace PRoConEvents
                                                         }
                                                         if (this.m_ID_cache[kvp.Value.EAGuid].Id > 0 && this.m_ID_cache[kvp.Value.EAGuid].StatsID == 0)
                                                         {
-                                                            string InsertdataSQL = @"INSERT INTO " + this.tbl_server_player + @" (ServerID, PlayerID) VALUES(@ServerID, @PlayerID)";
-                                                            using (MySqlCommand OdbcCom = new MySqlCommand(InsertdataSQL, MySqlConn, MySqlTrans))
-                                                            {
-                                                                //Insert
-                                                                this.DebugInfo("Trace", "Insert PlayerID " + this.m_ID_cache[kvp.Value.EAGuid].Id + "into tbl_server_player");
-                                                                OdbcCom.Parameters.AddWithValue("@ServerID", this.ServerID);
-                                                                OdbcCom.Parameters.AddWithValue("@PlayerID", this.m_ID_cache[kvp.Value.EAGuid].Id);
-                                                                OdbcCom.ExecuteNonQuery();
-                                                            }
+                                                            String InsertdataSQL = @"INSERT INTO " + this.tbl_server_player + @" (ServerID, PlayerID) VALUES(@ServerID, @PlayerID)";
+                                                            //Insert
+                                                            this.DebugInfo("Trace", "Insert PlayerID " + this.m_ID_cache[kvp.Value.EAGuid].Id + "into tbl_server_player");
+                                                            MySqlConn.Execute(InsertdataSQL, new { ServerID = this.ServerID, PlayerID = this.m_ID_cache[kvp.Value.EAGuid].Id }, transaction: MySqlTrans);
                                                         }
                                                     }
                                                 }
@@ -500,42 +460,25 @@ namespace PRoConEvents
 																VALUES(@StatsID, @Score, @Kills, @Headshots, @Deaths, @Suicide, @TKs, @Playtime, @Rounds, @FirstSeenOnServer, @LastSeenOnServer, @Killstreak, @Deathstreak, @HighScore , @Wins, @Losses) 
                                                                 ON DUPLICATE KEY UPDATE Score = Score + @Score, Kills = Kills + @Kills,Headshots = Headshots + @Headshots, Deaths = Deaths + @Deaths, Suicide = Suicide + @Suicide, TKs = TKs + @TKs, Playtime = Playtime + @Playtime, Rounds = Rounds + @Rounds, LastSeenOnServer = @LastSeenOnServer, Killstreak = GREATEST(Killstreak,@Killstreak),Deathstreak = GREATEST(Deathstreak, @Deathstreak) ,HighScore = GREATEST(HighScore, @HighScore), Wins = Wins + @Wins, Losses = Losses + @Losses ";
 
-                                                            using (MySqlCommand OdbcCom = new MySqlCommand(playerstatsSQL, MySqlConn, MySqlTrans))
+                                                            MySqlConn.Execute(playerstatsSQL, new
                                                             {
-                                                                //Insert
-                                                                OdbcCom.Parameters.AddWithValue("@StatsID", this.m_ID_cache[kvp.Value.EAGuid].StatsID);
-                                                                OdbcCom.Parameters.AddWithValue("@Score", kvp.Value.TotalScore);
-                                                                OdbcCom.Parameters.AddWithValue("@Kills", kvp.Value.Kills);
-                                                                OdbcCom.Parameters.AddWithValue("@Headshots", kvp.Value.Headshots);
-                                                                if (kvp.Value.Deaths >= 0)
-                                                                {
-                                                                    OdbcCom.Parameters.AddWithValue("@Deaths", kvp.Value.Deaths);
-                                                                }
-                                                                else
-                                                                {
-                                                                    OdbcCom.Parameters.AddWithValue("@Deaths", 0);
-                                                                }
-                                                                OdbcCom.Parameters.AddWithValue("@Suicide", kvp.Value.Suicides);
-                                                                OdbcCom.Parameters.AddWithValue("@TKs", kvp.Value.Teamkills);
-                                                                OdbcCom.Parameters.AddWithValue("@Playtime", kvp.Value.TotalPlaytime);
-                                                                OdbcCom.Parameters.AddWithValue("@Rounds", 1);
-                                                                OdbcCom.Parameters.AddWithValue("@FirstSeenOnServer", kvp.Value.TimePlayerjoined);
-                                                                if (kvp.Value.TimePlayerleft != DateTime.MinValue)
-                                                                {
-                                                                    OdbcCom.Parameters.AddWithValue("@LastSeenOnServer", kvp.Value.TimePlayerleft);
-                                                                }
-                                                                else
-                                                                {
-                                                                    OdbcCom.Parameters.AddWithValue("@LastSeenOnServer", MyDateTime.Now);
-                                                                }
-                                                                OdbcCom.Parameters.AddWithValue("@Killstreak", kvp.Value.Killstreak);
-                                                                OdbcCom.Parameters.AddWithValue("@Deathstreak", kvp.Value.Deathstreak);
-                                                                OdbcCom.Parameters.AddWithValue("@HighScore", kvp.Value.TotalScore);
-                                                                OdbcCom.Parameters.AddWithValue("@Wins", kvp.Value.Wins);
-                                                                OdbcCom.Parameters.AddWithValue("@Losses", kvp.Value.Losses);
-
-                                                                OdbcCom.ExecuteNonQuery();
-                                                            }
+                                                                StatsID = this.m_ID_cache[kvp.Value.EAGuid].StatsID,
+                                                                Score = kvp.Value.TotalScore,
+                                                                Kills = kvp.Value.Kills,
+                                                                Headshots = kvp.Value.Headshots,
+                                                                Deaths = (kvp.Value.Deaths >= 0) ? kvp.Value.Deaths : 0,
+                                                                Suicide = kvp.Value.Suicides,
+                                                                TKs = kvp.Value.Teamkills,
+                                                                Playtime = kvp.Value.TotalPlaytime,
+                                                                Rounds = 1,
+                                                                FirstSeenOnServer = kvp.Value.TimePlayerjoined,
+                                                                LastSeenOnServer = (kvp.Value.TimePlayerleft != DateTime.MinValue) ? kvp.Value.TimePlayerleft : MyDateTime.Now,
+                                                                Killstreak = kvp.Value.Killstreak,
+                                                                Deathstreak = kvp.Value.Deathstreak,
+                                                                HighScore = kvp.Value.TotalScore,
+                                                                Wins = kvp.Value.Wins,
+                                                                Losses = kvp.Value.Losses
+                                                            }, transaction: MySqlTrans);
 
                                                             if (this.m_weaponstatsON == enumBoolYesNo.Yes)
                                                             {
@@ -556,15 +499,14 @@ namespace PRoConEvents
                                                                             {
                                                                                 if (this.WeaponMappingDic.ContainsKey(leaf.Value.Name))
                                                                                 {
-                                                                                    using (MySqlCommand OdbcCom = new MySqlCommand(NewWeaponStatsSQL, MySqlConn, MySqlTrans))
+                                                                                    MySqlConn.Execute(NewWeaponStatsSQL, new
                                                                                     {
-                                                                                        OdbcCom.Parameters.AddWithValue("@StatsID", this.m_ID_cache[kvp.Value.EAGuid].StatsID);
-                                                                                        OdbcCom.Parameters.AddWithValue("@WeaponID", this.WeaponMappingDic[leaf.Value.Name]);
-                                                                                        OdbcCom.Parameters.AddWithValue("@Kills", leaf.Value.Kills);
-                                                                                        OdbcCom.Parameters.AddWithValue("@Headshots", leaf.Value.Headshots);
-                                                                                        OdbcCom.Parameters.AddWithValue("@Deaths", leaf.Value.Deaths);
-                                                                                        OdbcCom.ExecuteNonQuery();
-                                                                                    }
+                                                                                        StatsID = this.m_ID_cache[kvp.Value.EAGuid].StatsID,
+                                                                                        WeaponID = this.WeaponMappingDic[leaf.Value.Name],
+                                                                                        Kills = leaf.Value.Kills,
+                                                                                        Headshots = leaf.Value.Headshots,
+                                                                                        Deaths = leaf.Value.Deaths
+                                                                                    }, transaction: MySqlTrans);
                                                                                 }
                                                                             }
                                                                         }
@@ -661,13 +603,12 @@ namespace PRoConEvents
                                                         {
                                                             KnifeSQL = "INSERT INTO " + this.tbl_dogtags + @"(KillerID, VictimID, Count) VALUES(@KillerID, @VictimID, @Count)
                             						ON DUPLICATE KEY UPDATE Count = Count + @Count";
-                                                            using (MySqlCommand OdbcCom = new MySqlCommand(KnifeSQL, MySqlConn, MySqlTrans))
+                                                            MySqlConn.Execute(KnifeSQL, new
                                                             {
-                                                                OdbcCom.Parameters.AddWithValue("@KillerID", this.m_ID_cache[StatsTrackerCopy[kvp.Key.Killer].EAGuid].StatsID);
-                                                                OdbcCom.Parameters.AddWithValue("@VictimID", this.m_ID_cache[StatsTrackerCopy[kvp.Key.Victim].EAGuid].StatsID);
-                                                                OdbcCom.Parameters.AddWithValue("@Count", m_dicKnifeKills[kvp.Key]);
-                                                                OdbcCom.ExecuteNonQuery();
-                                                            }
+                                                                KillerID = this.m_ID_cache[StatsTrackerCopy[kvp.Key.Killer].EAGuid].StatsID,
+                                                                VictimID = this.m_ID_cache[StatsTrackerCopy[kvp.Key.Victim].EAGuid].StatsID,
+                                                                Count = m_dicKnifeKills[kvp.Key]
+                                                            }, transaction: MySqlTrans);
                                                         }
                                                     }
                                                     MySqlTrans.Commit();
@@ -740,8 +681,8 @@ namespace PRoConEvents
                                                     {
                                                         //remove last comma
                                                         InsertSQLSession.Length = InsertSQLSession.Length - 1;
-                                                        using (MySqlCommand sessionInsert = new MySqlCommand(InsertSQLSession.ToString(), MySqlConn, MySqlTrans))
                                                         {
+                                                            DynamicParameters sessionParams = new DynamicParameters();
                                                             i = 0;
                                                             foreach (CStats session in this.lstpassedSessions)
                                                             {
@@ -749,34 +690,27 @@ namespace PRoConEvents
                                                                 {
                                                                     if (this.m_ID_cache[session.EAGuid].StatsID > 0)
                                                                     {
-                                                                        sessionInsert.Parameters.AddWithValue("@StatsID" + i, this.m_ID_cache[session.EAGuid].StatsID);
-                                                                        sessionInsert.Parameters.AddWithValue("@StartTime" + i, session.TimePlayerjoined);
-                                                                        sessionInsert.Parameters.AddWithValue("@EndTime" + i, session.TimePlayerleft);
-                                                                        sessionInsert.Parameters.AddWithValue("@Score" + i, session.TotalScore);
-                                                                        sessionInsert.Parameters.AddWithValue("@Kills" + i, session.Kills);
-                                                                        sessionInsert.Parameters.AddWithValue("@Headshots" + i, session.Headshots);
-                                                                        if (session.Deaths >= 0)
-                                                                        {
-                                                                            sessionInsert.Parameters.AddWithValue("@Deaths" + i, session.Deaths);
-                                                                        }
-                                                                        else
-                                                                        {
-                                                                            sessionInsert.Parameters.AddWithValue("@Deaths" + i, 0);
-                                                                        }
-                                                                        sessionInsert.Parameters.AddWithValue("@TKs" + i, session.Teamkills);
-                                                                        sessionInsert.Parameters.AddWithValue("@Suicide" + i, session.Suicides);
-                                                                        sessionInsert.Parameters.AddWithValue("@RoundCount" + i, session.Rounds);
-                                                                        sessionInsert.Parameters.AddWithValue("@Playtime" + i, session.TotalPlaytime);
-                                                                        sessionInsert.Parameters.AddWithValue("@HighScore" + i, session.HighScore);
-                                                                        sessionInsert.Parameters.AddWithValue("@Killstreak" + i, session.Killstreak);
-                                                                        sessionInsert.Parameters.AddWithValue("@Deathstreak" + i, session.Deathstreak);
-                                                                        sessionInsert.Parameters.AddWithValue("@Wins" + i, session.Wins);
-                                                                        sessionInsert.Parameters.AddWithValue("@Losses" + i, session.Losses);
+                                                                        sessionParams.Add("StatsID" + i, this.m_ID_cache[session.EAGuid].StatsID);
+                                                                        sessionParams.Add("StartTime" + i, session.TimePlayerjoined);
+                                                                        sessionParams.Add("EndTime" + i, session.TimePlayerleft);
+                                                                        sessionParams.Add("Score" + i, session.TotalScore);
+                                                                        sessionParams.Add("Kills" + i, session.Kills);
+                                                                        sessionParams.Add("Headshots" + i, session.Headshots);
+                                                                        sessionParams.Add("Deaths" + i, (session.Deaths >= 0) ? session.Deaths : 0);
+                                                                        sessionParams.Add("TKs" + i, session.Teamkills);
+                                                                        sessionParams.Add("Suicide" + i, session.Suicides);
+                                                                        sessionParams.Add("RoundCount" + i, session.Rounds);
+                                                                        sessionParams.Add("Playtime" + i, session.TotalPlaytime);
+                                                                        sessionParams.Add("HighScore" + i, session.HighScore);
+                                                                        sessionParams.Add("Killstreak" + i, session.Killstreak);
+                                                                        sessionParams.Add("Deathstreak" + i, session.Deathstreak);
+                                                                        sessionParams.Add("Wins" + i, session.Wins);
+                                                                        sessionParams.Add("Losses" + i, session.Losses);
                                                                         i++;
                                                                     }
                                                                 }
                                                             }
-                                                            sessionInsert.ExecuteNonQuery();
+                                                            MySqlConn.Execute(InsertSQLSession.ToString(), sessionParams, transaction: MySqlTrans);
                                                             this.lstpassedSessions.Clear();
                                                         }
                                                     }
@@ -832,11 +766,7 @@ namespace PRoConEvents
                                                         FROM " + this.tbl_playerstats + @" tps
                                                         INNER JOIN " + this.tbl_server_player + @" tsp ON tps.StatsID = tsp.StatsID
                                                         WHERE tsp.ServerID = @ServerID GROUP BY tsp.ServerID";
-                                                    using (MySqlCommand OdbcCom = new MySqlCommand(serverstats, MySqlConn, MySqlTrans))
-                                                    {
-                                                        OdbcCom.Parameters.AddWithValue("@ServerID", this.ServerID);
-                                                        OdbcCom.ExecuteNonQuery();
-                                                    }
+                                                    MySqlConn.Execute(serverstats, new { ServerID = this.ServerID }, transaction: MySqlTrans);
                                                     MySqlTrans.Commit();
                                                     success = true;
                                                 }
@@ -1018,23 +948,23 @@ namespace PRoConEvents
                                     WHERE  tsp.ServerID = @ServerID AND tpd.SoldierName = @SoldierName";
                         }
                     }
-                    using (MySqlCommand MyCommand = new MySqlCommand(SQL))
                     {
                         DataTable resultTable;
-                        double kdr = 0;
+                        Double kdr = 0;
+                        DynamicParameters dynParams = new DynamicParameters();
                         if (this.m_enOverallRanking == enumBoolYesNo.Yes)
                         {
-                            MyCommand.Parameters.AddWithValue("@ServerGroup", this.intServerGroup);
-                            MyCommand.Parameters.AddWithValue("@SoldierName", strSpeaker);
+                            dynParams.Add("ServerGroup", this.intServerGroup);
+                            dynParams.Add("SoldierName", strSpeaker);
                         }
                         else
                         {
-                            MyCommand.Parameters.AddWithValue("@ServerID", ServerID);
-                            MyCommand.Parameters.AddWithValue("@SoldierName", strSpeaker);
+                            dynParams.Add("ServerID", ServerID);
+                            dynParams.Add("SoldierName", strSpeaker);
                         }
                         try
                         {
-                            resultTable = this.SQLquery(MyCommand);
+                            resultTable = this.SQLquery(SQL, dynParams);
                             if (resultTable.Rows != null)
                             {
                                 foreach (DataRow row in resultTable.Rows)
@@ -1161,22 +1091,22 @@ namespace PRoConEvents
                                 WHERE  tsp.ServerID = @ServerID AND tpd.SoldierName = @SoldierName";
                     }
                 }
-                using (MySqlCommand MyCommand = new MySqlCommand(SQL))
                 {
                     DataTable resultTable;
+                    DynamicParameters dynParams = new DynamicParameters();
                     if (this.m_enOverallRanking == enumBoolYesNo.Yes)
                     {
-                        MyCommand.Parameters.AddWithValue("@ServerGroup", this.intServerGroup);
-                        MyCommand.Parameters.AddWithValue("@SoldierName", strSpeaker);
+                        dynParams.Add("ServerGroup", this.intServerGroup);
+                        dynParams.Add("SoldierName", strSpeaker);
                     }
                     else
                     {
-                        MyCommand.Parameters.AddWithValue("@ServerID", ServerID);
-                        MyCommand.Parameters.AddWithValue("@SoldierName", strSpeaker);
+                        dynParams.Add("ServerID", ServerID);
+                        dynParams.Add("SoldierName", strSpeaker);
                     }
                     try
                     {
-                        resultTable = this.SQLquery(MyCommand);
+                        resultTable = this.SQLquery(SQL, dynParams);
                         if (resultTable.Rows != null)
                         {
                             foreach (DataRow row in resultTable.Rows)
@@ -1296,20 +1226,20 @@ namespace PRoConEvents
                              ORDER BY tps.rankKills ASC";
                     }
                 }
-                using (MySqlCommand MyCommand = new MySqlCommand(SQL))
                 {
+                    DynamicParameters dynParams = new DynamicParameters();
                     if (this.m_enOverallRanking == enumBoolYesNo.Yes)
                     {
-                        MyCommand.Parameters.AddWithValue("@ServerGroup", this.intServerGroup);
+                        dynParams.Add("ServerGroup", this.intServerGroup);
                     }
                     else
                     {
-                        MyCommand.Parameters.AddWithValue("@ServerID", this.ServerID);
+                        dynParams.Add("ServerID", this.ServerID);
                     }
                     DataTable resultTable;
                     try
                     {
-                        resultTable = this.SQLquery(MyCommand);
+                        resultTable = this.SQLquery(SQL, dynParams);
                         result = new List<string>();
                         //Top 10 Header
                         result.Add(this.m_strTop10Header.Replace("%serverName%", this.serverName));
@@ -1434,24 +1364,23 @@ namespace PRoConEvents
                 }
 
                 this.DebugInfo("Trace", "GetWeaponStats: Query:" + SQL);
-                using (MySqlCommand MyCommand = new MySqlCommand(SQL))
                 {
-                    //MyCommand.Parameters.AddWithValue("@WeaponID", this.weaponDic[this.DamageClass[strWeapon]][strWeapon].Name);
-                    MyCommand.Parameters.AddWithValue("@WeaponID", this.WeaponMappingDic[this.weaponDic[this.DamageClass[strWeapon]][strWeapon].Name]);
-                    MyCommand.Parameters.AddWithValue("@GameID", this.intServerGameType_ID);
+                    DynamicParameters dynParams = new DynamicParameters();
+                    dynParams.Add("WeaponID", this.WeaponMappingDic[this.weaponDic[this.DamageClass[strWeapon]][strWeapon].Name]);
+                    dynParams.Add("GameID", this.intServerGameType_ID);
                     if (this.m_enOverallRanking == enumBoolYesNo.Yes)
                     {
-                        MyCommand.Parameters.AddWithValue("@SoldierName", strPlayer);
-                        MyCommand.Parameters.AddWithValue("@ServerGroup", this.intServerGroup);
+                        dynParams.Add("SoldierName", strPlayer);
+                        dynParams.Add("ServerGroup", this.intServerGroup);
                     }
                     else
                     {
-                        MyCommand.Parameters.AddWithValue("@ServerID", this.ServerID);
-                        MyCommand.Parameters.AddWithValue("@SoldierName", strPlayer);
+                        dynParams.Add("ServerID", this.ServerID);
+                        dynParams.Add("SoldierName", strPlayer);
                     }
                     try
                     {
-                        DataTable resultTable = this.SQLquery(MyCommand);
+                        DataTable resultTable = this.SQLquery(SQL, dynParams);
                         if (resultTable.Rows != null)
                         {
                             foreach (DataRow row in resultTable.Rows)
@@ -1561,16 +1490,16 @@ namespace PRoConEvents
 
                 this.DebugInfo("Trace", "GetWeaponTop10: Query:" + SQL);
 
-                using (MySqlCommand MyCommand = new MySqlCommand(SQL))
                 {
-                    MyCommand.Parameters.AddWithValue("@WeaponID", this.WeaponMappingDic[this.weaponDic[this.DamageClass[strWeapon]][strWeapon].Name]);
+                    DynamicParameters dynParams = new DynamicParameters();
+                    dynParams.Add("WeaponID", this.WeaponMappingDic[this.weaponDic[this.DamageClass[strWeapon]][strWeapon].Name]);
                     if (this.m_enOverallRanking == enumBoolYesNo.Yes)
                     {
-                        MyCommand.Parameters.AddWithValue("@ServerGroup", this.intServerGroup);
+                        dynParams.Add("ServerGroup", this.intServerGroup);
                     }
                     else
                     {
-                        MyCommand.Parameters.AddWithValue("@ServerID", this.ServerID);
+                        dynParams.Add("ServerID", this.ServerID);
                     }
                     DataTable resultTable;
                     try
@@ -1578,7 +1507,7 @@ namespace PRoConEvents
                         result = new List<string>();
                         //result.Add("Top 10 Killers with %Weapon%");
                         result.Add(this.m_strWeaponTop10Header.Replace("%serverName%", this.serverName));
-                        resultTable = this.SQLquery(MyCommand);
+                        resultTable = this.SQLquery(SQL, dynParams);
                         StringBuilder Top10Row = new StringBuilder(this.m_strWeaponTop10RowFormat);
                         if (resultTable.Rows != null)
                         {
@@ -1685,23 +1614,23 @@ namespace PRoConEvents
                 return;
             }
 
-            using (MySqlCommand MyCommand = new MySqlCommand(SQL))
             {
+                DynamicParameters dynParams = new DynamicParameters();
                 if (this.m_enOverallRanking == enumBoolYesNo.Yes)
                 {
-                    MyCommand.Parameters.AddWithValue("@ServerGroup", this.intServerGroup);
-                    MyCommand.Parameters.AddWithValue("@KillerID", this.GetID(this.StatsTracker[strPlayer].EAGuid).Id);
+                    dynParams.Add("ServerGroup", this.intServerGroup);
+                    dynParams.Add("KillerID", this.GetID(this.StatsTracker[strPlayer].EAGuid).Id);
                 }
                 else
                 {
-                    MyCommand.Parameters.AddWithValue("@KillerID", this.GetID(this.StatsTracker[strPlayer].EAGuid).StatsID);
-                    MyCommand.Parameters.AddWithValue("@ServerID", this.ServerID);
+                    dynParams.Add("KillerID", this.GetID(this.StatsTracker[strPlayer].EAGuid).StatsID);
+                    dynParams.Add("ServerID", this.ServerID);
                 }
                 try
                 {
-                    result = new List<string>();
+                    result = new List<String>();
                     result.Add("Your favorite Victims:");
-                    DataTable resultTable = this.SQLquery(MyCommand);
+                    DataTable resultTable = this.SQLquery(SQL, dynParams);
                     if (resultTable.Rows.Count > 0)
                     {
                         foreach (DataRow row in resultTable.Rows)
@@ -1720,23 +1649,23 @@ namespace PRoConEvents
                     this.DebugInfo("Error", "GetDogtags: " + c);
                 }
             }
-            using (MySqlCommand MyCommand = new MySqlCommand(SQL2))
             {
+                DynamicParameters dynParams2 = new DynamicParameters();
                 if (this.m_enOverallRanking == enumBoolYesNo.Yes)
                 {
-                    MyCommand.Parameters.AddWithValue("@ServerGroup", this.intServerGroup);
-                    MyCommand.Parameters.AddWithValue("@VictimID", this.GetID(this.StatsTracker[strPlayer].EAGuid).Id);
+                    dynParams2.Add("ServerGroup", this.intServerGroup);
+                    dynParams2.Add("VictimID", this.GetID(this.StatsTracker[strPlayer].EAGuid).Id);
                 }
                 else
                 {
-                    MyCommand.Parameters.AddWithValue("@VictimID", this.GetID(this.StatsTracker[strPlayer].EAGuid).StatsID);
-                    MyCommand.Parameters.AddWithValue("@ServerID", this.ServerID);
+                    dynParams2.Add("VictimID", this.GetID(this.StatsTracker[strPlayer].EAGuid).StatsID);
+                    dynParams2.Add("ServerID", this.ServerID);
                 }
                 try
                 {
-                    result2 = new List<string>();
+                    result2 = new List<String>();
                     result2.Add("Your worst Enemies:");
-                    DataTable resultTable = this.SQLquery(MyCommand);
+                    DataTable resultTable = this.SQLquery(SQL2, dynParams2);
                     if (resultTable.Rows.Count > 0)
                     {
                         foreach (DataRow row in resultTable.Rows)
@@ -1858,20 +1787,20 @@ namespace PRoConEvents
                 }
                 //Add LIMIT
                 SQL = SQL_SELECT + SQL_JOINS + SQL_CONDS + @" LIMIT 1";
-                using (MySqlCommand MyCommand = new MySqlCommand(SQL))
                 {
                     DataTable resultTable;
+                    DynamicParameters dynParams = new DynamicParameters();
                     if (this.m_enOverallRanking == enumBoolYesNo.Yes)
                     {
-                        MyCommand.Parameters.AddWithValue("@ServerGroup", this.intServerGroup);
+                        dynParams.Add("ServerGroup", this.intServerGroup);
                     }
                     else
                     {
-                        MyCommand.Parameters.AddWithValue("@ServerID", this.ServerID);
+                        dynParams.Add("ServerID", this.ServerID);
                     }
                     try
                     {
-                        resultTable = this.SQLquery(MyCommand);
+                        resultTable = this.SQLquery(SQL, dynParams);
                         if (resultTable.Rows != null)
                         {
                             foreach (DataRow row in resultTable.Rows)
@@ -1996,21 +1925,21 @@ namespace PRoConEvents
                 //Add LIMIT
                 SQL = SQL + @" LIMIT 10";
 
-                using (MySqlCommand MyCommand = new MySqlCommand(SQL))
                 {
-                    MyCommand.Parameters.AddWithValue("@DAYS", intdays);
+                    DynamicParameters dynParams = new DynamicParameters();
+                    dynParams.Add("DAYS", intdays);
                     if (this.m_enOverallRanking == enumBoolYesNo.Yes)
                     {
-                        MyCommand.Parameters.AddWithValue("@ServerGroup", this.intServerGroup);
+                        dynParams.Add("ServerGroup", this.intServerGroup);
                     }
                     else
                     {
-                        MyCommand.Parameters.AddWithValue("@ServerID", this.ServerID);
+                        dynParams.Add("ServerID", this.ServerID);
                     }
                     DataTable resultTable;
                     try
                     {
-                        resultTable = this.SQLquery(MyCommand);
+                        resultTable = this.SQLquery(SQL, dynParams);
                         result = new List<string>();
                         //Top 10 Header
                         result.Add(this.m_strTop10HeaderForPeriod.Replace("%serverName%", this.serverName).Replace("%intervaldays%", intdays.ToString()));
@@ -2346,10 +2275,8 @@ namespace PRoConEvents
             List<string> result = new List<string>(this.m_lstServerstatsMsg);
             try
             {
-                using (MySqlCommand SelectCommand = new MySqlCommand(SQL))
                 {
-                    SelectCommand.Parameters.AddWithValue("@ServerID", this.ServerID);
-                    DataTable sqlresult = this.SQLquery(SelectCommand);
+                    DataTable sqlresult = this.SQLquery(SQL, new { ServerID = this.ServerID });
                     if (sqlresult != null)
                     {
                         foreach (DataRow row in sqlresult.Rows)
@@ -2521,19 +2448,19 @@ namespace PRoConEvents
                                 WHERE  tpd.SoldierName = @SoldierName AND tsp.ServerID = @ServerID";
                     }
                 }
-                using (MySqlCommand SelectCommand = new MySqlCommand(SQL))
                 {
+                    DynamicParameters dynParams = new DynamicParameters();
                     if (this.m_enOverallRanking == enumBoolYesNo.Yes)
                     {
-                        SelectCommand.Parameters.AddWithValue("@SoldierName", SoldierName);
-                        SelectCommand.Parameters.AddWithValue("@ServerGroup", this.intServerGroup);
+                        dynParams.Add("SoldierName", SoldierName);
+                        dynParams.Add("ServerGroup", this.intServerGroup);
                     }
                     else
                     {
-                        SelectCommand.Parameters.AddWithValue("@SoldierName", SoldierName);
-                        SelectCommand.Parameters.AddWithValue("@ServerID", this.ServerID);
+                        dynParams.Add("SoldierName", SoldierName);
+                        dynParams.Add("ServerID", this.ServerID);
                     }
-                    DataTable result = this.SQLquery(SelectCommand);
+                    DataTable result = this.SQLquery(SQL, dynParams);
                     if (result != null)
                     {
                         foreach (DataRow row in result.Rows)
@@ -2581,10 +2508,8 @@ namespace PRoConEvents
 	  								 INNER JOIN " + tbl_bfbcs + @" b ON a.PlayerID = b.bfbcsID
 	               					 WHERE a.SoldierName = @SoldierName";
 
-                        using (MySqlCommand SelectCommand = new MySqlCommand(SQL))
                         {
-                            SelectCommand.Parameters.AddWithValue("@SoldierName", Player.SoldierName);
-                            DataTable result = this.SQLquery(SelectCommand);
+                            DataTable result = this.SQLquery(SQL, new { SoldierName = Player.SoldierName });
 
                             foreach (DataRow row in result.Rows)
                             {
@@ -3080,11 +3005,8 @@ namespace PRoConEvents
             try
             {
                 string sqlSelect = "SELECT `WeaponID`,`Fullname` FROM `" + this.tbl_weapons + @"` WHERE `GameID` = @GameID";
-                using (MySqlCommand SelectCommand = new MySqlCommand(sqlSelect))
                 {
-                    SelectCommand.Parameters.AddWithValue("@GameID", this.intServerGameType_ID);
-
-                    DataTable result = this.SQLquery(SelectCommand);
+                    DataTable result = this.SQLquery(sqlSelect, new { GameID = this.intServerGameType_ID });
                     if (result != null || result.Rows.Count != 0)
                     {
                         foreach (DataRow row in result.Rows)
