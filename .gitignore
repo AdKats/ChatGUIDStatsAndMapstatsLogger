@@ -1,4 +1,12 @@
 #################
+## .NET
+#################
+*.nupkg
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+#################
 ## Eclipse
 #################
 
