@@ -571,7 +571,7 @@ namespace PRoConEvents
 
         public string GetPluginAuthor()
         {
-            return "[GWC]XpKiller";
+            return "[GWC]XpKiller (maintained by Prophet731)";
         }
 
         public string GetPluginWebsite()
