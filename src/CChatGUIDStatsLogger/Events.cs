@@ -18,7 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Threading;
 
 using MySqlConnector;
@@ -34,7 +33,7 @@ namespace PRoConEvents
         #region IPRoConPluginInterface
         /*=======ProCon Events========*/
         // Player events
-        public override void OnPlayerJoin(string strSoldierName)
+        public override void OnPlayerJoin(String strSoldierName)
         {
             if (this.StatsTracker.ContainsKey(strSoldierName) == false)
             {
@@ -74,7 +73,7 @@ namespace PRoConEvents
             }
         }
 
-        public override void OnPlayerAuthenticated(string soldierName, string guid)
+        public override void OnPlayerAuthenticated(String soldierName, String guid)
         {
             if (this.StatsTracker.ContainsKey(soldierName) == false)
             {
@@ -88,7 +87,7 @@ namespace PRoConEvents
         }
 
         // Will receive ALL chat global/team/squad in R3.
-        public override void OnGlobalChat(string strSpeaker, string strMessage)
+        public override void OnGlobalChat(String strSpeaker, String strMessage)
         {
             if (strMessage.Length > 0)
             {
@@ -97,7 +96,7 @@ namespace PRoConEvents
         }
 
         // Place holder, non-functioning in R3.  It recieves the same data as OnGlobalChat though so look out for now.
-        public override void OnTeamChat(string strSpeaker, string strMessage, int iTeamID)
+        public override void OnTeamChat(String strSpeaker, String strMessage, Int32 iTeamID)
         {
             if (strMessage.Length > 0)
             {
@@ -106,7 +105,7 @@ namespace PRoConEvents
         }
 
         // Place holder, non-functioning in R3.  It recieves the same data as OnGlobalChat though so look out for now.
-        public override void OnSquadChat(string strSpeaker, string strMessage, int iTeamID, int iSquadID)
+        public override void OnSquadChat(String strSpeaker, String strMessage, Int32 iTeamID, Int32 iSquadID)
         {
             if (strMessage.Length > 0)
             {
@@ -114,19 +113,19 @@ namespace PRoConEvents
             }
         }
 
-        public override void OnPunkbusterMessage(string strPunkbusterMessage)
+        public override void OnPunkbusterMessage(String strPunkbusterMessage)
         {
             try
             {
                 // This piece of code gets the number of player out of Punkbustermessages
-                string playercount = String.Empty;
+                String playercount = String.Empty;
                 if (strPunkbusterMessage.Contains("End of Player List"))
                 {
                     playercount = strPunkbusterMessage.Remove(0, 1 + strPunkbusterMessage.LastIndexOf("("));
                     playercount = playercount.Replace(" ", "");
                     playercount = playercount.Remove(playercount.LastIndexOf("P"), playercount.LastIndexOf(")"));
                     //this.DebugInfo("EoPl: "+playercount);
-                    int players = Convert.ToInt32(playercount);
+                    Int32 players = Convert.ToInt32(playercount);
                     if (players >= intRoundStartCount && bool_roundStarted == false)
                     {
                         bool_roundStarted = true;
@@ -423,11 +422,11 @@ namespace PRoConEvents
             this.Mapstats.MapEnd();
         }
 
-        public override void OnRoundOver(int winningTeamId)
+        public override void OnRoundOver(Int32 winningTeamId)
         {
             this.DebugInfo("Trace", "OnRoundOver: TeamId -> " + winningTeamId);
             //StatsTracker
-            foreach (KeyValuePair<string, CStats> kvp in this.StatsTracker)
+            foreach (KeyValuePair<String, CStats> kvp in this.StatsTracker)
             {
                 if (kvp.Value.PlayerOnServer == true)
                 {
@@ -444,7 +443,7 @@ namespace PRoConEvents
             //Session
             lock (this.sessionlock)
             {
-                foreach (KeyValuePair<string, CStats> kvp in this.m_dicSession)
+                foreach (KeyValuePair<String, CStats> kvp in this.m_dicSession)
                 {
                     if (kvp.Value.PlayerOnServer == true)
                     {
@@ -461,7 +460,7 @@ namespace PRoConEvents
             }
         }
 
-        public override void OnPlayerSpawned(string soldierName, Inventory spawnedInventory)
+        public override void OnPlayerSpawned(String soldierName, Inventory spawnedInventory)
         {
             if (bool_roundStarted == true && StatsTracker.ContainsKey(soldierName) == true)
             {
@@ -485,7 +484,7 @@ namespace PRoConEvents
             }
         }
 
-        public override void OnLevelLoaded(string mapFileName, string Gamemode, int roundsPlayed, int roundsTotal)
+        public override void OnLevelLoaded(String mapFileName, String Gamemode, Int32 roundsPlayed, Int32 roundsTotal)
         {
             if ((DateTime.Now.Subtract(this.dtLastRoundendEvent)).TotalSeconds > 30)
             {
@@ -501,12 +500,12 @@ namespace PRoConEvents
             }
         }
 
-        public override void OnRoundStartPlayerCount(int limit)
+        public override void OnRoundStartPlayerCount(Int32 limit)
         {
             this.intRoundStartCount = limit;
         }
 
-        public override void OnRoundRestartPlayerCount(int limit)
+        public override void OnRoundRestartPlayerCount(Int32 limit)
         {
             this.intRoundRestartCount = limit;
         }

@@ -56,9 +56,9 @@ namespace PRoConEvents
                 lstReturn.Add(new CPluginVariable("Chatlogging|Enable chatlog filter(Regex)?", typeof(enumBoolYesNo), this.m_enChatlogFilter));
                 if (this.m_enChatlogFilter == enumBoolYesNo.Yes)
                 {
-                    this.lstStrChatFilterRules = new List<string>(this.ListReplace(this.lstStrChatFilterRules, "&#124", "|"));
+                    this.lstStrChatFilterRules = new List<String>(this.ListReplace(this.lstStrChatFilterRules, "&#124", "|"));
                     this.lstStrChatFilterRules = this.ListReplace(this.lstStrChatFilterRules, "&#43", "+");
-                    lstReturn.Add(new CPluginVariable("Chatlogging|Chatfilterrules(Regex)", typeof(string[]), this.lstStrChatFilterRules.ToArray()));
+                    lstReturn.Add(new CPluginVariable("Chatlogging|Chatfilterrules(Regex)", typeof(String[]), this.lstStrChatFilterRules.ToArray()));
                 }
             }
             lstReturn.Add(new CPluginVariable("Stats|Enable Statslogging?", typeof(enumBoolYesNo), this.m_enLogSTATS));
@@ -71,12 +71,12 @@ namespace PRoConEvents
                 lstReturn.Add(new CPluginVariable("Stats|Server group (0 - 128)", this.intServerGroup.GetType(), this.intServerGroup));
                 lstReturn.Add(new CPluginVariable("Stats|Send Stats to all Players?", typeof(enumBoolYesNo), this.m_enSendStatsToAll));
                 lstReturn.Add(new CPluginVariable("Stats|Enable KDR correction?", typeof(enumBoolYesNo), this.m_kdrCorrection));
-                lstReturn.Add(new CPluginVariable("Stats|PlayerMessage", typeof(string[]), this.m_lstPlayerStatsMessage.ToArray()));
+                lstReturn.Add(new CPluginVariable("Stats|PlayerMessage", typeof(String[]), this.m_lstPlayerStatsMessage.ToArray()));
                 //Player of the day
-                lstReturn.Add(new CPluginVariable("Stats|Player of the day Message", typeof(string[]), this.m_lstPlayerOfTheDayMessage.ToArray()));
-                lstReturn.Add(new CPluginVariable("Stats|Weaponstats Message ", typeof(string[]), this.m_lstWeaponstatsMsg.ToArray()));
+                lstReturn.Add(new CPluginVariable("Stats|Player of the day Message", typeof(String[]), this.m_lstPlayerOfTheDayMessage.ToArray()));
+                lstReturn.Add(new CPluginVariable("Stats|Weaponstats Message ", typeof(String[]), this.m_lstWeaponstatsMsg.ToArray()));
                 //Serverstats
-                lstReturn.Add(new CPluginVariable("Stats|Serverstats Message", typeof(string[]), this.m_lstServerstatsMsg.ToArray()));
+                lstReturn.Add(new CPluginVariable("Stats|Serverstats Message", typeof(String[]), this.m_lstServerstatsMsg.ToArray()));
                 lstReturn.Add(new CPluginVariable("Stats|Enable Livescoreboard in DB?", typeof(enumBoolYesNo), this.m_enableCurrentPlayerstatsTable));
                 //Simplestats
                 lstReturn.Add(new CPluginVariable("Stats|Log playerdata only (no playerstats)?", typeof(enumBoolYesNo), this.m_enLogPlayerDataOnly));
@@ -86,8 +86,8 @@ namespace PRoConEvents
                 {
                     //lstReturn.Add(new CPluginVariable("WelcomeStats|Yell Welcome Message(not the stats)?", typeof(enumBoolYesNo), this.m_enYellWelcomeMSG));
                     //lstReturn.Add(new CPluginVariable("WelcomeStats|Welcome Message", this.m_strPlayerWelcomeMsg.GetType(), this.m_strPlayerWelcomeMsg));
-                    lstReturn.Add(new CPluginVariable("WelcomeStats|Welcome Message", typeof(string[]), this.m_lstPlayerWelcomeStatsMessage.ToArray()));
-                    lstReturn.Add(new CPluginVariable("WelcomeStats|Welcome Message for new Player", typeof(string[]), this.m_lstNewPlayerWelcomeMsg.ToArray()));
+                    lstReturn.Add(new CPluginVariable("WelcomeStats|Welcome Message", typeof(String[]), this.m_lstPlayerWelcomeStatsMessage.ToArray()));
+                    lstReturn.Add(new CPluginVariable("WelcomeStats|Welcome Message for new Player", typeof(String[]), this.m_lstNewPlayerWelcomeMsg.ToArray()));
                     lstReturn.Add(new CPluginVariable("WelcomeStats|Welcomestats Delay", this.int_welcomeStatsDelay.GetType(), this.int_welcomeStatsDelay));
                 }
                 //top10
@@ -105,11 +105,11 @@ namespace PRoConEvents
                 }
             }
             lstReturn.Add(new CPluginVariable("Debug|DebugLevel", "enum.Actions(Trace|Info|Warning|Error)", this.GlobalDebugMode));
-            lstReturn.Add(new CPluginVariable("Table|Keywordlist", typeof(string[]), this.m_lstTableconfig.ToArray()));
+            lstReturn.Add(new CPluginVariable("Table|Keywordlist", typeof(String[]), this.m_lstTableconfig.ToArray()));
             lstReturn.Add(new CPluginVariable("Table|tableSuffix", this.tableSuffix.GetType(), this.tableSuffix));
             lstReturn.Add(new CPluginVariable("MapStats|MapStats ON?", typeof(enumBoolYesNo), this.m_mapstatsON));
             lstReturn.Add(new CPluginVariable("Session|Session ON?", typeof(enumBoolYesNo), this.m_sessionON));
-            lstReturn.Add(new CPluginVariable("Session|SessionMessage", typeof(string[]), this.m_lstSessionMessage.ToArray()));
+            lstReturn.Add(new CPluginVariable("Session|SessionMessage", typeof(String[]), this.m_lstSessionMessage.ToArray()));
             lstReturn.Add(new CPluginVariable("Session|Save Sessiondata to DB?", typeof(enumBoolYesNo), this.m_enSessionTracking));
             lstReturn.Add(new CPluginVariable("FloodProtection|Playerrequests per Round", this.numberOfAllowedRequests.GetType(), this.numberOfAllowedRequests));
             lstReturn.Add(new CPluginVariable("TimeOffset|Servertime Offset", this.m_dTimeOffset.GetType(), this.m_dTimeOffset));
@@ -184,9 +184,9 @@ namespace PRoConEvents
 
                 if (this.m_enChatlogFilter == enumBoolYesNo.Yes)
                 {
-                    this.lstStrChatFilterRules = new List<string>(this.ListReplace(this.lstStrChatFilterRules, "|", "&#124"));
+                    this.lstStrChatFilterRules = new List<String>(this.ListReplace(this.lstStrChatFilterRules, "|", "&#124"));
                     this.lstStrChatFilterRules = this.ListReplace(this.lstStrChatFilterRules, "&#43", "+");
-                    lstReturn.Add(new CPluginVariable("Chatfilterrules(Regex)", typeof(string[]), this.lstStrChatFilterRules.ToArray()));
+                    lstReturn.Add(new CPluginVariable("Chatfilterrules(Regex)", typeof(String[]), this.lstStrChatFilterRules.ToArray()));
                 }
             }
             lstReturn.Add(new CPluginVariable("Enable Statslogging?", typeof(enumBoolYesNo), this.m_enLogSTATS));
@@ -200,18 +200,18 @@ namespace PRoConEvents
             lstReturn.Add(new CPluginVariable("Send Stats to all Players?", typeof(enumBoolYesNo), this.m_enSendStatsToAll));
             lstReturn.Add(new CPluginVariable("Enable Livescoreboard in DB?", typeof(enumBoolYesNo), this.m_enableCurrentPlayerstatsTable));
             lstReturn.Add(new CPluginVariable("Enable KDR correction?", typeof(enumBoolYesNo), this.m_kdrCorrection));
-            lstReturn.Add(new CPluginVariable("PlayerMessage", typeof(string[]), this.m_lstPlayerStatsMessage.ToArray()));
+            lstReturn.Add(new CPluginVariable("PlayerMessage", typeof(String[]), this.m_lstPlayerStatsMessage.ToArray()));
             //Player of the day
-            lstReturn.Add(new CPluginVariable("Player of the day Message", typeof(string[]), this.m_lstPlayerOfTheDayMessage.ToArray()));
-            lstReturn.Add(new CPluginVariable("Weaponstats Message ", typeof(string[]), this.m_lstWeaponstatsMsg.ToArray()));
+            lstReturn.Add(new CPluginVariable("Player of the day Message", typeof(String[]), this.m_lstPlayerOfTheDayMessage.ToArray()));
+            lstReturn.Add(new CPluginVariable("Weaponstats Message ", typeof(String[]), this.m_lstWeaponstatsMsg.ToArray()));
             //Serverstats
-            lstReturn.Add(new CPluginVariable("Serverstats Message", typeof(string[]), this.m_lstServerstatsMsg.ToArray()));
+            lstReturn.Add(new CPluginVariable("Serverstats Message", typeof(String[]), this.m_lstServerstatsMsg.ToArray()));
 
             lstReturn.Add(new CPluginVariable("Awards ON?", typeof(enumBoolYesNo), this.m_awardsON));
             lstReturn.Add(new CPluginVariable("Enable Welcomestats?", typeof(enumBoolYesNo), this.m_enWelcomeStats));
             lstReturn.Add(new CPluginVariable("Yell Welcome Message(not the stats)?", typeof(enumBoolYesNo), this.m_enYellWelcomeMSG));
-            lstReturn.Add(new CPluginVariable("Welcome Message", typeof(string[]), this.m_lstPlayerWelcomeStatsMessage.ToArray()));
-            lstReturn.Add(new CPluginVariable("Welcome Message for new Player", typeof(string[]), this.m_lstNewPlayerWelcomeMsg.ToArray()));
+            lstReturn.Add(new CPluginVariable("Welcome Message", typeof(String[]), this.m_lstPlayerWelcomeStatsMessage.ToArray()));
+            lstReturn.Add(new CPluginVariable("Welcome Message for new Player", typeof(String[]), this.m_lstNewPlayerWelcomeMsg.ToArray()));
             lstReturn.Add(new CPluginVariable("Welcomestats Delay", this.int_welcomeStatsDelay.GetType(), this.int_welcomeStatsDelay));
             lstReturn.Add(new CPluginVariable("Top10 ingame", this.m_enTop10ingame.GetType(), this.m_enTop10ingame));
             lstReturn.Add(new CPluginVariable("Top10 header line", this.m_strTop10Header.GetType(), this.m_strTop10Header));
@@ -224,11 +224,11 @@ namespace PRoConEvents
             lstReturn.Add(new CPluginVariable("WeaponTop10 row format", this.m_strWeaponTop10RowFormat.GetType(), this.m_strWeaponTop10RowFormat));
             //
             lstReturn.Add(new CPluginVariable("DebugLevel", "enum.Actions(Trace|Info|Warning|Error)", this.GlobalDebugMode));
-            lstReturn.Add(new CPluginVariable("Keywordlist", typeof(string[]), this.m_lstTableconfig.ToArray()));
+            lstReturn.Add(new CPluginVariable("Keywordlist", typeof(String[]), this.m_lstTableconfig.ToArray()));
             lstReturn.Add(new CPluginVariable("tableSuffix", this.tableSuffix.GetType(), this.tableSuffix));
             lstReturn.Add(new CPluginVariable("MapStats ON?", typeof(enumBoolYesNo), this.m_mapstatsON));
             lstReturn.Add(new CPluginVariable("Session ON?", typeof(enumBoolYesNo), this.m_sessionON));
-            lstReturn.Add(new CPluginVariable("SessionMessage", typeof(string[]), this.m_lstSessionMessage.ToArray()));
+            lstReturn.Add(new CPluginVariable("SessionMessage", typeof(String[]), this.m_lstSessionMessage.ToArray()));
             lstReturn.Add(new CPluginVariable("Save Sessiondata to DB?", typeof(enumBoolYesNo), this.m_enSessionTracking));
             lstReturn.Add(new CPluginVariable("Playerrequests per Round", this.numberOfAllowedRequests.GetType(), this.numberOfAllowedRequests));
             lstReturn.Add(new CPluginVariable("Servertime Offset", this.m_dTimeOffset.GetType(), this.m_dTimeOffset));
@@ -262,7 +262,7 @@ namespace PRoConEvents
             return lstReturn;
         }
 
-        public void SetPluginVariable(string strVariable, string strValue)
+        public void SetPluginVariable(String strVariable, String strValue)
         {
             if (strVariable.CompareTo("Host") == 0)
             {
@@ -350,7 +350,7 @@ namespace PRoConEvents
             }
             else if (strVariable.CompareTo("Chatfilterrules(Regex)") == 0)
             {
-                this.lstStrChatFilterRules = new List<string>(CPluginVariable.DecodeStringArray(strValue));
+                this.lstStrChatFilterRules = new List<String>(CPluginVariable.DecodeStringArray(strValue));
                 this.BuildRegexRuleset();
             }
             else if (strVariable.CompareTo("Enable Statslogging?") == 0 && Enum.IsDefined(typeof(enumBoolYesNo), strValue) == true)
@@ -406,21 +406,21 @@ namespace PRoConEvents
             }
             else if (strVariable.CompareTo("PlayerMessage") == 0)
             {
-                this.m_lstPlayerStatsMessage = new List<string>(CPluginVariable.DecodeStringArray(strValue));
+                this.m_lstPlayerStatsMessage = new List<String>(CPluginVariable.DecodeStringArray(strValue));
             }
             // player of the day
             else if (strVariable.CompareTo("Player of the day Message") == 0)
             {
-                this.m_lstPlayerOfTheDayMessage = new List<string>(CPluginVariable.DecodeStringArray(strValue));
+                this.m_lstPlayerOfTheDayMessage = new List<String>(CPluginVariable.DecodeStringArray(strValue));
             }
             else if (strVariable.CompareTo("Weaponstats Message ") == 0)
             {
-                this.m_lstWeaponstatsMsg = new List<string>(CPluginVariable.DecodeStringArray(strValue));
+                this.m_lstWeaponstatsMsg = new List<String>(CPluginVariable.DecodeStringArray(strValue));
             }
             //Serverstats
             else if (strVariable.CompareTo("Serverstats Message") == 0)
             {
-                this.m_lstServerstatsMsg = new List<string>(CPluginVariable.DecodeStringArray(strValue));
+                this.m_lstServerstatsMsg = new List<String>(CPluginVariable.DecodeStringArray(strValue));
             }
             else if (strVariable.CompareTo("Enable Welcomestats?") == 0 && Enum.IsDefined(typeof(enumBoolYesNo), strValue) == true)
             {
@@ -437,11 +437,11 @@ namespace PRoConEvents
             else if (strVariable.CompareTo("Welcome Message") == 0)
             {
                 //this.m_strPlayerWelcomeMsg = strValue;
-                this.m_lstPlayerWelcomeStatsMessage = new List<string>(CPluginVariable.DecodeStringArray(strValue));
+                this.m_lstPlayerWelcomeStatsMessage = new List<String>(CPluginVariable.DecodeStringArray(strValue));
             }
             else if (strVariable.CompareTo("Welcome Message for new Player") == 0)
             {
-                this.m_lstNewPlayerWelcomeMsg = new List<string>(CPluginVariable.DecodeStringArray(strValue));
+                this.m_lstNewPlayerWelcomeMsg = new List<String>(CPluginVariable.DecodeStringArray(strValue));
             }
             else if (strVariable.CompareTo("Welcomestats Delay") == 0 && Int32.TryParse(strValue, out int_welcomeStatsDelay) == true)
             {
@@ -486,7 +486,7 @@ namespace PRoConEvents
             }
             else if (strVariable.CompareTo("Keywordlist") == 0)
             {
-                this.m_lstTableconfig = new List<string>(CPluginVariable.DecodeStringArray(strValue));
+                this.m_lstTableconfig = new List<String>(CPluginVariable.DecodeStringArray(strValue));
             }
             else if (strVariable.CompareTo("tableSuffix") == 0)
             {
@@ -505,7 +505,7 @@ namespace PRoConEvents
             }
             else if (strVariable.CompareTo("SessionMessage") == 0)
             {
-                this.m_lstSessionMessage = new List<string>(CPluginVariable.DecodeStringArray(strValue));
+                this.m_lstSessionMessage = new List<String>(CPluginVariable.DecodeStringArray(strValue));
             }
             else if (strVariable.CompareTo("Save Sessiondata to DB?") == 0 && Enum.IsDefined(typeof(enumBoolYesNo), strValue) == true)
             {

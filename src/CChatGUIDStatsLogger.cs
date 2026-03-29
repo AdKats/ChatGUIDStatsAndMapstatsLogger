@@ -17,14 +17,10 @@
  */
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Configuration;
 using System.Data;
-using System.Reflection;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 
@@ -45,37 +41,37 @@ namespace PRoConEvents
         private MatchCommand loggerStatusCommand;
 
         //Proconvariables
-        private string m_strHostName;
-        private string m_strPort;
-        private string m_strPRoConVersion;
+        private String m_strHostName;
+        private String m_strPort;
+        private String m_strPRoConVersion;
 
         //Tablebuilder
-        private readonly object tablebuilderlock;
+        private readonly Object tablebuilderlock;
 
         //other locks
-        private readonly object chatloglock;
-        private readonly object sqlquerylock;
-        private readonly object sessionlock;
-        private readonly object streamlock;
-        private readonly object ConnectionStringBuilderlock;
-        private readonly object registerallcomandslock;
+        private readonly Object chatloglock;
+        private readonly Object sqlquerylock;
+        private readonly Object sessionlock;
+        private readonly Object streamlock;
+        private readonly Object ConnectionStringBuilderlock;
+        private readonly Object registerallcomandslock;
 
         //Dateoffset
         private myDateTime_W MyDateTime;
-        private double m_dTimeOffset;
+        private Double m_dTimeOffset;
 
         //Logging
-        private Dictionary<string, CPunkbusterInfo> m_dicPbInfo = new Dictionary<string, CPunkbusterInfo>();
+        private Dictionary<String, CPunkbusterInfo> m_dicPbInfo = new Dictionary<String, CPunkbusterInfo>();
         //Chatlog
         private static List<CLogger> ChatLog = new List<CLogger>();
-        private List<string> lstStrChatFilterRules;
+        private List<String> lstStrChatFilterRules;
         private List<Regex> lstChatFilterRules;
         //Statslog
-        private Dictionary<string, CStats> StatsTracker = new Dictionary<string, CStats>();
+        private Dictionary<String, CStats> StatsTracker = new Dictionary<String, CStats>();
         //Dogtags
-        private Dictionary<CKillerVictim, int> m_dicKnifeKills = new Dictionary<CKillerVictim, int>();
+        private Dictionary<CKillerVictim, Int32> m_dicKnifeKills = new Dictionary<CKillerVictim, Int32>();
         //Session
-        private Dictionary<string, CStats> m_dicSession = new Dictionary<string, CStats>();
+        private Dictionary<String, CStats> m_dicSession = new Dictionary<String, CStats>();
         private CMapstats Mapstats;
         private CMapstats Nextmapinfo;
         private List<CStats> lstpassedSessions = new List<CStats>();
@@ -84,127 +80,127 @@ namespace PRoConEvents
         //private string m_strGameMod;
 
         //Spamprotection
-        private int numberOfAllowedRequests;
+        private Int32 numberOfAllowedRequests;
         private CSpamprotection Spamprotection;
 
         //Keywords
-        private List<string> m_lstTableconfig = new List<string>();
-        private Dictionary<string, List<string>> m_dicKeywords = new Dictionary<string, List<string>>();
+        private List<String> m_lstTableconfig = new List<String>();
+        private Dictionary<String, List<String>> m_dicKeywords = new Dictionary<String, List<String>>();
 
         //Weapondic
-        private Dictionary<string, Dictionary<string, CStats.CUsedWeapon>> weaponDic = new Dictionary<string, Dictionary<string, CStats.CUsedWeapon>>();
+        private Dictionary<String, Dictionary<String, CStats.CUsedWeapon>> weaponDic = new Dictionary<String, Dictionary<String, CStats.CUsedWeapon>>();
 
         //DamageClassDic
-        private Dictionary<string, string> DamageClass = new Dictionary<string, string>();
+        private Dictionary<String, String> DamageClass = new Dictionary<String, String>();
 
         //WelcomeStatsDic
-        private Dictionary<string, DateTime> welcomestatsDic = new Dictionary<string, DateTime>();
+        private Dictionary<String, DateTime> welcomestatsDic = new Dictionary<String, DateTime>();
 
         //Weapon Mapping Dictionary
-        private Dictionary<string, int> WeaponMappingDic = new Dictionary<string, int>();
+        private Dictionary<String, Int32> WeaponMappingDic = new Dictionary<String, Int32>();
 
         //ServerID
-        private int ServerID;
+        private Int32 ServerID;
 
         //Awards
-        private List<string> m_lstAwardTable = new List<string>();
+        private List<String> m_lstAwardTable = new List<String>();
 
         //Tablenames
-        private string tbl_playerdata;
-        private string tbl_playerstats;
-        private string tbl_weaponstats;
-        private string tbl_dogtags;
-        private string tbl_mapstats;
-        private string tbl_chatlog;
-        private string tbl_bfbcs;
-        private string tbl_awards;
-        private string tbl_server;
-        private string tbl_server_player;
-        private string tbl_server_stats;
-        private string tbl_playerrank;
-        private string tbl_sessions;
-        private string tbl_currentplayers;
-        private string tbl_weapons;
-        private string tbl_weapons_stats;
-        private string tbl_games;
-        private string tbl_teamscores;
+        private String tbl_playerdata;
+        private String tbl_playerstats;
+        private String tbl_weaponstats;
+        private String tbl_dogtags;
+        private String tbl_mapstats;
+        private String tbl_chatlog;
+        private String tbl_bfbcs;
+        private String tbl_awards;
+        private String tbl_server;
+        private String tbl_server_player;
+        private String tbl_server_stats;
+        private String tbl_playerrank;
+        private String tbl_sessions;
+        private String tbl_currentplayers;
+        private String tbl_weapons;
+        private String tbl_weapons_stats;
+        private String tbl_games;
+        private String tbl_teamscores;
 
         // Timelogging
-        private bool bool_roundStarted;
+        private Boolean bool_roundStarted;
         private DateTime Time_RankingStarted;
 
         //Other
-        private Dictionary<string, CPlayerInfo> m_dicPlayers = new Dictionary<string, CPlayerInfo>();   //Players
+        private Dictionary<String, CPlayerInfo> m_dicPlayers = new Dictionary<String, CPlayerInfo>();   //Players
 
         //ID Cache
-        private Dictionary<string, C_ID_Cache> m_ID_cache = new Dictionary<string, C_ID_Cache>();
+        private Dictionary<String, C_ID_Cache> m_ID_cache = new Dictionary<String, C_ID_Cache>();
 
         //Various Variables
         //private int m_strUpdateInterval;
-        private bool isStreaming;
-        private string serverName;
-        private bool m_isPluginEnabled;
-        private bool boolTableEXISTS;
-        private bool boolKeywordDicReady;
-        private string tableSuffix;
-        private bool MySql_Connection_is_activ;
+        private Boolean isStreaming;
+        private String serverName;
+        private Boolean m_isPluginEnabled;
+        private Boolean boolTableEXISTS;
+        private Boolean boolKeywordDicReady;
+        private String tableSuffix;
+        private Boolean MySql_Connection_is_activ;
         //Last time Stat Logger actively interacted with the database
         private DateTime lastDBInteraction = DateTime.MinValue;
 
         //Update skipswitches
-        private bool boolSkipGlobalUpdate;
-        private bool boolSkipServerUpdate;
-        private bool boolSkipServerStatsUpdate;
+        private Boolean boolSkipGlobalUpdate;
+        private Boolean boolSkipServerUpdate;
+        private Boolean boolSkipServerStatsUpdate;
 
         //Transaction retry
-        private int TransactionRetryCount;
+        private Int32 TransactionRetryCount;
 
         //Playerstartcount
-        private int intRoundStartCount;
-        private int intRoundRestartCount;
+        private Int32 intRoundStartCount;
+        private Int32 intRoundRestartCount;
 
         //Webrequest
-        private int m_requestIntervall;
-        private string m_webAddress;
+        private Int32 m_requestIntervall;
+        private String m_webAddress;
 
         //BFBCS
         //private double BFBCS_UpdateInterval;
         //private int BFBCS_Min_Request;
 
         //Database Connection Variables
-        private string m_strHost;
-        private string m_strDBPort;
-        private string m_strDatabase;
-        private string m_strUserName;
-        private string m_strPassword;
+        private String m_strHost;
+        private String m_strDBPort;
+        private String m_strDatabase;
+        private String m_strUserName;
+        private String m_strPassword;
         //private string m_strDatabaseDriver;
 
         //Stats Message Variables        
-        private List<string> m_lstPlayerStatsMessage;
-        private List<string> m_lstPlayerOfTheDayMessage;
-        private List<string> m_lstPlayerWelcomeStatsMessage;
-        private List<string> m_lstNewPlayerWelcomeMsg;
-        private List<string> m_lstWeaponstatsMsg;
-        private List<string> m_lstServerstatsMsg;
+        private List<String> m_lstPlayerStatsMessage;
+        private List<String> m_lstPlayerOfTheDayMessage;
+        private List<String> m_lstPlayerWelcomeStatsMessage;
+        private List<String> m_lstNewPlayerWelcomeMsg;
+        private List<String> m_lstWeaponstatsMsg;
+        private List<String> m_lstServerstatsMsg;
         //private string m_strPlayerWelcomeMsg;
         //private string m_strNewPlayerWelcomeMsg;
-        private int int_welcomeStatsDelay;
-        private string m_strTop10Header;
-        private string m_strTop10RowFormat;
-        private string m_strWeaponTop10Header;
-        private string m_strWeaponTop10RowFormat;
+        private Int32 int_welcomeStatsDelay;
+        private String m_strTop10Header;
+        private String m_strTop10RowFormat;
+        private String m_strWeaponTop10Header;
+        private String m_strWeaponTop10RowFormat;
 
         //top10 for Period
-        private string m_strTop10HeaderForPeriod;
+        private String m_strTop10HeaderForPeriod;
 
         //Session
-        private List<string> m_lstSessionMessage;
+        private List<String> m_lstSessionMessage;
 
         //Debug
-        private string GlobalDebugMode;
+        private String GlobalDebugMode;
 
         //ServerGroup
-        private int intServerGroup;
+        private Int32 intServerGroup;
 
         //Bools for switch on and off funktions
         private enumBoolYesNo m_enNoServerMsg;	//Logging of Server Messages
@@ -233,8 +229,8 @@ namespace PRoConEvents
         private enumBoolOnOff m_connectionPooling; //Connection Pooling
         private enumBoolOnOff m_Connectioncompression;
 
-        private int m_maxPoolSize; //Connection Pooling
-        private int m_minPoolSize; //Connection Pooling
+        private Int32 m_maxPoolSize; //Connection Pooling
+        private Int32 m_minPoolSize; //Connection Pooling
 
         //More Database Variables
         //Commands
@@ -249,44 +245,43 @@ namespace PRoConEvents
 
         //ServerInfo Event fix
         private DateTime dtLastServerInfoEvent;
-        private int minIntervalllenght;
+        private Int32 minIntervalllenght;
 
         //Double Roundendfix
         private DateTime dtLastRoundendEvent;
         private DateTime dtLastOnListPlayersEvent;
 
         //Top10 for Period
-        private int m_intDaysForPeriodTop10;
+        private Int32 m_intDaysForPeriodTop10;
 
         //New In-Game Command System
-        private string m_IngameCommands_stats;
-        private string m_IngameCommands_serverstats;
-        private string m_IngameCommands_session;
-        private string m_IngameCommands_dogtags;
-        private string m_IngameCommands_top10;
-        private string m_IngameCommands_playerOfTheDay;
-        private string m_IngameCommands_top10ForPeriod;
+        private String m_IngameCommands_stats;
+        private String m_IngameCommands_serverstats;
+        private String m_IngameCommands_session;
+        private String m_IngameCommands_dogtags;
+        private String m_IngameCommands_top10;
+        private String m_IngameCommands_playerOfTheDay;
+        private String m_IngameCommands_top10ForPeriod;
 
-        private Dictionary<string, CStatsIngameCommands> dicIngameCommands = new Dictionary<string, CStatsIngameCommands>();
+        private Dictionary<String, CStatsIngameCommands> dicIngameCommands = new Dictionary<String, CStatsIngameCommands>();
 
         //ServerGametype
-        private string strServerGameType = String.Empty;
-        private int intServerGameType_ID;
+        private String strServerGameType = String.Empty;
+        private Int32 intServerGameType_ID;
 
         public CChatGUIDStatsLogger()
         {
-            loggerStatusCommand = new MatchCommand("CChatGUIDStatsLogger", "GetStatus", new List<string>(), "CChatGUIDStatsLogger_Status", new List<MatchArgumentFormat>(), new ExecutionRequirements(ExecutionScope.None), "Useable by other plugins to determine the current status of this plugin.");
+            loggerStatusCommand = new MatchCommand("CChatGUIDStatsLogger", "GetStatus", new List<String>(), "CChatGUIDStatsLogger_Status", new List<MatchArgumentFormat>(), new ExecutionRequirements(ExecutionScope.None), "Useable by other plugins to determine the current status of this plugin.");
 
             //tablebuilderlock
-            this.tablebuilderlock = new object();
+            this.tablebuilderlock = new Object();
             //other locks
-            this.chatloglock = new object();
-            this.sqlquerylock = new object();
-            this.sessionlock = new object();
-            this.streamlock = new object();
-            this.ConnectionStringBuilderlock = new object();
-            this.registerallcomandslock = new object();
-
+            this.chatloglock = new Object();
+            this.sqlquerylock = new Object();
+            this.sessionlock = new Object();
+            this.streamlock = new Object();
+            this.ConnectionStringBuilderlock = new Object();
+            this.registerallcomandslock = new Object();
 
             //update skipswitch
             this.boolSkipGlobalUpdate = false;
@@ -300,8 +295,8 @@ namespace PRoConEvents
             //this.m_strUpdateInterval = 30;
             this.isStreaming = true;
             this.serverName = String.Empty;
-            this.m_ID_cache = new Dictionary<string, C_ID_Cache>();
-            this.m_dicKeywords = new Dictionary<string, List<string>>();
+            this.m_ID_cache = new Dictionary<String, C_ID_Cache>();
+            this.m_dicKeywords = new Dictionary<String, List<String>>();
             this.boolKeywordDicReady = false;
             this.tableSuffix = String.Empty;
             this.Mapstats = new CMapstats(MyDateTime.Now, "START", 0, 0, this.m_dTimeOffset);
@@ -312,7 +307,7 @@ namespace PRoConEvents
             TransactionRetryCount = 3;
 
             //Chatlog
-            this.lstStrChatFilterRules = new List<string>();
+            this.lstStrChatFilterRules = new List<String>();
             this.lstChatFilterRules = new List<Regex>();
 
             //BFBCS
@@ -376,52 +371,51 @@ namespace PRoConEvents
             this.m_minPoolSize = 0; //Connection Pooling
             this.m_maxPoolSize = 10; //Connection Pooling
 
-
             //Welcomestats
             //this.m_strPlayerWelcomeMsg = "[yell,4]Nice to see you on our Server again, %playerName%";
             //this.m_strNewPlayerWelcomeMsg = "[yell,4]Welcome to the %serverName% Server, %playerName%";
             this.int_welcomeStatsDelay = 5;
-            this.welcomestatsDic = new Dictionary<string, DateTime>();
+            this.welcomestatsDic = new Dictionary<String, DateTime>();
 
             //Playerstats
-            this.m_lstPlayerStatsMessage = new List<string>();
+            this.m_lstPlayerStatsMessage = new List<String>();
             this.m_lstPlayerStatsMessage.Add("Serverstats for %playerName%:");
             this.m_lstPlayerStatsMessage.Add("Score: %playerScore%  %playerKills% Kills %playerHeadshots% HS  %playerDeaths% Deaths K/D: %playerKDR%");
             this.m_lstPlayerStatsMessage.Add("Your Serverrank is: %playerRank% of %allRanks%");
 
             //Player of the day
-            this.m_lstPlayerOfTheDayMessage = new List<string>();
+            this.m_lstPlayerOfTheDayMessage = new List<String>();
             this.m_lstPlayerOfTheDayMessage.Add("%playerName% is the Player of the day");
             this.m_lstPlayerOfTheDayMessage.Add("Score: %playerScore%  %playerKills% Kills %playerHeadshots% HS  %playerDeaths% Deaths K/D: %playerKDR%");
             this.m_lstPlayerOfTheDayMessage.Add("His Serverrank is: %playerRank% of %allRanks%");
             this.m_lstPlayerOfTheDayMessage.Add("Overall playtime for today: %playerPlaytime%");
 
             //Welcomestats
-            this.m_lstPlayerWelcomeStatsMessage = new List<string>();
+            this.m_lstPlayerWelcomeStatsMessage = new List<String>();
             this.m_lstPlayerWelcomeStatsMessage.Add("Nice to see you on our Server again, %playerName%");
             this.m_lstPlayerWelcomeStatsMessage.Add("Serverstats for %playerName%:");
             this.m_lstPlayerWelcomeStatsMessage.Add("Score: %playerScore%  %playerKills% Kills %playerHeadshots% HS  %playerDeaths% Deaths K/D: %playerKDR%");
             this.m_lstPlayerWelcomeStatsMessage.Add("Your Serverrank is: %playerRank% of %allRanks%");
 
             //Welcomestats new Player
-            this.m_lstNewPlayerWelcomeMsg = new List<string>();
+            this.m_lstNewPlayerWelcomeMsg = new List<String>();
             this.m_lstNewPlayerWelcomeMsg.Add("Welcome to the %serverName% Server, %playerName%");
 
             //Weaponstats
-            this.m_lstWeaponstatsMsg = new List<string>();
+            this.m_lstWeaponstatsMsg = new List<String>();
             this.m_lstWeaponstatsMsg.Add("%playerName%'s Stats for %Weapon%:");
             this.m_lstWeaponstatsMsg.Add("%playerKills% Kills  %playerHeadshots% Headshots  Headshotrate: %playerKHR%%");
             this.m_lstWeaponstatsMsg.Add("Your Weaponrank is: %playerRank% of %allRanks%");
 
             //Serverstats
-            this.m_lstServerstatsMsg = new List<string>();
+            this.m_lstServerstatsMsg = new List<String>();
             this.m_lstServerstatsMsg.Add("Serverstatistics for server %serverName%");
             this.m_lstServerstatsMsg.Add("Unique Players: %countPlayer%  Totalplaytime: %sumPlaytime%");
             this.m_lstServerstatsMsg.Add("Totalscore: %sumScore% Avg. Score: %avgScore% Avg. SPM: %avgSPM%");
             this.m_lstServerstatsMsg.Add("Totalkills: %sumKills% Avg. Kills: %avgKills% Avg. KPM: %avgKPM%");
 
             //Session
-            this.m_lstSessionMessage = new List<string>();
+            this.m_lstSessionMessage = new List<String>();
             this.m_lstSessionMessage.Add("%playerName%'s Session Data  Session started %SessionStarted%");
             this.m_lstSessionMessage.Add("Score: %playerScore%  %playerKills% Kills  %playerHeadshots% HS  %playerDeaths% Deaths K/D: %playerKDR%");
             this.m_lstSessionMessage.Add("Your Rank: %playerRank% (%RankDif%)  Sessionlength: %SessionDuration% Minutes");
@@ -436,7 +430,7 @@ namespace PRoConEvents
             this.m_strTop10HeaderForPeriod = "Top 10 Player of the %serverName% Server over the last %intervaldays% days";
 
             //Awards
-            this.m_lstAwardTable = new List<string>();
+            this.m_lstAwardTable = new List<String>();
             this.m_lstAwardTable.Add("First");
             this.m_lstAwardTable.Add("Second");
             this.m_lstAwardTable.Add("Third");
@@ -451,7 +445,7 @@ namespace PRoConEvents
             this.ServerID = 0;
 
             //Tableconfig Tweaks for friendly weapon names
-            this.m_lstTableconfig = new List<string>();
+            this.m_lstTableconfig = new List<String>();
             this.m_lstTableconfig.Add("870MCS{870,870MCS}");
             this.m_lstTableconfig.Add("AEK-971{AEK,AEK971,AEK-971}");
             this.m_lstTableconfig.Add("AKS-74u{AKSU,AKS-74,AKSU-74,AKS-74U}");
@@ -559,27 +553,27 @@ namespace PRoConEvents
         }
 
         #region PluginSetup
-        public string GetPluginName()
+        public String GetPluginName()
         {
             return "PRoCon Chat, GUID, Stats and Map Logger";
         }
 
-        public string GetPluginVersion()
+        public String GetPluginVersion()
         {
             return "1.0.0.4";
         }
 
-        public string GetPluginAuthor()
+        public String GetPluginAuthor()
         {
             return "[GWC]XpKiller (maintained by Prophet731)";
         }
 
-        public string GetPluginWebsite()
+        public String GetPluginWebsite()
         {
             return "www.german-wildcards.de";
         }
 
-        public string GetPluginDescription()
+        public String GetPluginDescription()
         {
             return @"
 If you like my Plugins, please feel free to donate<br>
@@ -590,7 +584,6 @@ If you like my Plugins, please feel free to donate<br>
 <img alt='' border='0' src='https://www.paypal.com/de_DE/i/scr/pixel.gif' width='1' height='1'>
 </form></p>
 
-   
 <h2>Description</h2>
     <p>This plugin is used to log player chat, player GUID's, player Stats, Weaponstats and Mapstats.</p>
     <p>This inludes: Chat, PBGUID, EAGUID, IP, Stats, Weaponstats, Dogtags, Killstreaks, Country, ClanTag, ... to be continued.. ;-)</p>
@@ -611,13 +604,10 @@ If you like my Plugins, please feel free to donate<br>
 <p>Enter your settings into Plugin Settings and THEN enable the plugin</p>
 <p>Now the plugin should work if not request help in the <a href='https://myrcon.net' target='_blank'>Forum</a></p>
 
-	
 <h2>Things you have to know:</h2>
 You can add additional Names for weapons in the Pluginsettings 
 Use comma to seperate the words. <br>
 Example: M16A4{M16} --> 40MMGL{M16,M16A3}  <br><br>
-
-
 
 <h2>Ingame Commands (defaults!)</h2>
 	<blockquote><h4>[@,#,!]stats</h4>Tells the Player their own Serverstats</blockquote>
@@ -749,8 +739,6 @@ Example: M16A4{M16} --> 40MMGL{M16,M16A3}  <br><br>
     <p>Messages without Tag will will be transmitted with the say command.</p>
 <br>
     
-
-
 	<h3>NOTE:</h3>
 		<p>Tracked stats are: Kills, Headshots, Deaths, All Weapons, TKs, Suicides, Score, Playtime, Rounds, MapStats, Dogtags </p>
 		<p>The Rank is created dynamical from Query in  my opinion much better than write it back to database.</p>
@@ -759,7 +747,6 @@ Example: M16A4{M16} --> 40MMGL{M16,M16A3}  <br><br>
 <h3>Known issues:</h3>
 <p>Vehicles cannot be tracked due limitations in the Rcon Protocol blame EA/Dice for it</p>
 
-		
 <h3>Changelog:</h3><br>
 <b>1.0.0.4</b><br>
 Allow NON PB enabled Servers to use the Plugin for Stats tracking. See <a href='https://github.com/AdKats/ChatGUIDStatsAndMapstatsLogger/issues/5' target='_blank'>#5</a>. Thanks @icecoldme<br>
@@ -784,16 +771,15 @@ First Release<br>
 Multigame Support<br>
 <br><br>
 
-
 ";
         }
 
-        public void OnPluginLoadingEnv(List<string> lstPluginEnv)
+        public void OnPluginLoadingEnv(List<String> lstPluginEnv)
         {
             this.strServerGameType = lstPluginEnv[1].ToUpper();
         }
 
-        public void OnPluginLoaded(string strHostName, string strPort, string strPRoConVersion)
+        public void OnPluginLoaded(String strHostName, String strPort, String strPRoConVersion)
         {
             this.m_strHostName = strHostName;
             this.m_strPort = strPort;
@@ -868,9 +854,9 @@ Multigame Support<br>
             this.UnregisterAllCommands();
         }
 
-        private List<string> GetExcludedCommandStrings(string strAccountName)
+        private List<String> GetExcludedCommandStrings(String strAccountName)
         {
-            List<string> lstReturnCommandStrings = new List<string>();
+            List<String> lstReturnCommandStrings = new List<String>();
             List<MatchCommand> lstCommands = this.GetRegisteredCommands();
             CPrivileges privileges = this.GetAccountPrivileges(strAccountName);
             foreach (MatchCommand mtcCommand in lstCommands)
@@ -883,9 +869,9 @@ Multigame Support<br>
             return lstReturnCommandStrings;
         }
 
-        private List<string> GetCommandStrings()
+        private List<String> GetCommandStrings()
         {
-            List<string> lstReturnCommandStrings = new List<string>();
+            List<String> lstReturnCommandStrings = new List<String>();
             List<MatchCommand> lstCommands = this.GetRegisteredCommands();
             foreach (MatchCommand mtcCommand in lstCommands)
             {
@@ -902,13 +888,13 @@ Multigame Support<br>
             this.setupIngameCommandDic();
             try
             {
-                foreach (KeyValuePair<string, CStatsIngameCommands> kvp in this.dicIngameCommands)
+                foreach (KeyValuePair<String, CStatsIngameCommands> kvp in this.dicIngameCommands)
                 {
-                    if (kvp.Value.commands != string.Empty)
+                    if (kvp.Value.commands != String.Empty)
                     {
-                        foreach (string command in kvp.Value.commands.Split(','))
+                        foreach (String command in kvp.Value.commands.Split(','))
                         {
-                            this.UnregisterCommand(new MatchCommand("CChatGUIDStatsLogger", kvp.Value.functioncall.ToString(), this.Listify<string>("@", "!", "#"), command.ToString(), this.Listify<MatchArgumentFormat>(), new ExecutionRequirements(ExecutionScope.All), kvp.Value.description.ToString()));
+                            this.UnregisterCommand(new MatchCommand("CChatGUIDStatsLogger", kvp.Value.functioncall.ToString(), this.Listify<String>("@", "!", "#"), command.ToString(), this.Listify<MatchArgumentFormat>(), new ExecutionRequirements(ExecutionScope.All), kvp.Value.description.ToString()));
                         }
                     }
                 }
@@ -940,19 +926,19 @@ Multigame Support<br>
 
                     try
                     {
-                        foreach (KeyValuePair<string, CStatsIngameCommands> kvp in this.dicIngameCommands)
+                        foreach (KeyValuePair<String, CStatsIngameCommands> kvp in this.dicIngameCommands)
                         {
-                            if (kvp.Value.commands != string.Empty)
+                            if (kvp.Value.commands != String.Empty)
                             {
-                                foreach (string command in kvp.Value.commands.Split(','))
+                                foreach (String command in kvp.Value.commands.Split(','))
                                 {
                                     if (kvp.Value.boolEnabled)
                                     {
-                                        this.RegisterCommand(new MatchCommand("CChatGUIDStatsLogger", kvp.Value.functioncall, this.Listify<string>("@", "!", "#"), command, this.Listify<MatchArgumentFormat>(), new ExecutionRequirements(ExecutionScope.All), kvp.Value.description));
+                                        this.RegisterCommand(new MatchCommand("CChatGUIDStatsLogger", kvp.Value.functioncall, this.Listify<String>("@", "!", "#"), command, this.Listify<MatchArgumentFormat>(), new ExecutionRequirements(ExecutionScope.All), kvp.Value.description));
                                     }
                                     else
                                     {
-                                        this.UnregisterCommand(new MatchCommand("CChatGUIDStatsLogger", kvp.Value.functioncall, this.Listify<string>("@", "!", "#"), command, this.Listify<MatchArgumentFormat>(), new ExecutionRequirements(ExecutionScope.All), kvp.Value.description));
+                                        this.UnregisterCommand(new MatchCommand("CChatGUIDStatsLogger", kvp.Value.functioncall, this.Listify<String>("@", "!", "#"), command, this.Listify<MatchArgumentFormat>(), new ExecutionRequirements(ExecutionScope.All), kvp.Value.description));
                                     }
                                 }
                             }
@@ -970,7 +956,7 @@ Multigame Support<br>
         {
             lock (this.dicIngameCommands)
             {
-                bool boolenable = false;
+                Boolean boolenable = false;
                 this.dicIngameCommands.Clear();
                 if (this.m_enLogSTATS == enumBoolYesNo.Yes && this.m_enableInGameCommands == enumBoolYesNo.Yes)
                 {
@@ -1001,22 +987,22 @@ Multigame Support<br>
         /*==========Classes========*/
         class CLogger
         {
-            private readonly string _Name;
-            private string _Message = String.Empty;
-            private string _Subset = String.Empty;
+            private readonly String _Name;
+            private String _Message = String.Empty;
+            private String _Subset = String.Empty;
             private DateTime _Time;
 
-            public string Name
+            public String Name
             {
                 get { return _Name; }
             }
 
-            public string Message
+            public String Message
             {
                 get { return _Message; }
             }
 
-            public string Subset
+            public String Subset
             {
                 get { return _Subset; }
             }
@@ -1026,7 +1012,7 @@ Multigame Support<br>
                 get { return _Time; }
             }
 
-            public CLogger(DateTime time, string name, string message, string subset)
+            public CLogger(DateTime time, String name, String message, String subset)
             {
                 _Name = name;
                 _Message = message;
@@ -1037,148 +1023,148 @@ Multigame Support<br>
 
         class CStats
         {
-            private string _ClanTag;
-            private string _Guid;
-            private string _EAGuid;
-            private string _IP;
-            private string _PlayerCountryCode;
-            private int _Score = 0;
-            private int _HighScore = 0;
-            private int _LastScore = 0;
-            private int _Kills = 0;
-            private int _Headshots = 0;
-            private int _Deaths = 0;
-            private int _Suicides = 0;
-            private int _Teamkills = 0;
-            private int _Playtime = 0;
-            private int _Rounds = 0;
+            private String _ClanTag;
+            private String _Guid;
+            private String _EAGuid;
+            private String _IP;
+            private String _PlayerCountryCode;
+            private Int32 _Score = 0;
+            private Int32 _HighScore = 0;
+            private Int32 _LastScore = 0;
+            private Int32 _Kills = 0;
+            private Int32 _Headshots = 0;
+            private Int32 _Deaths = 0;
+            private Int32 _Suicides = 0;
+            private Int32 _Teamkills = 0;
+            private Int32 _Playtime = 0;
+            private Int32 _Rounds = 0;
             private DateTime _Playerjoined;
             private DateTime _TimePlayerleft;
             private DateTime _TimePlayerjoined;
-            private int _PlayerleftServerScore = 0;
-            private bool _playerOnServer = true;
-            private int _rank = 0;
+            private Int32 _PlayerleftServerScore = 0;
+            private Boolean _playerOnServer = true;
+            private Int32 _rank = 0;
             //KD Correction
-            private int _beforeleftKills = 0;
-            private int _beforeleftDeaths = 0;
+            private Int32 _beforeleftKills = 0;
+            private Int32 _beforeleftDeaths = 0;
             //Streaks
-            private int _Killstreak;
-            private int _Deathstreak;
-            private int _Killcount;
-            private int _Deathcount;
+            private Int32 _Killstreak;
+            private Int32 _Deathstreak;
+            private Int32 _Killcount;
+            private Int32 _Deathcount;
             //Wins&Loses
-            private int _Wins = 0;
-            private int _Losses = 0;
+            private Int32 _Wins = 0;
+            private Int32 _Losses = 0;
             //TeamID
-            private int _TeamId = 0;
+            private Int32 _TeamId = 0;
             //BFBCS
             private CBFBCS _BFBCS_Stats;
             private myDateTime MyDateTime = new myDateTime(0);
-            public Dictionary<string, Dictionary<string, CStats.CUsedWeapon>> dicWeap = new Dictionary<string, Dictionary<string, CStats.CUsedWeapon>>();
+            public Dictionary<String, Dictionary<String, CStats.CUsedWeapon>> dicWeap = new Dictionary<String, Dictionary<String, CStats.CUsedWeapon>>();
 
             //Awards
             private CAwards _Awards;
 
             //global Rank
-            private int _GlobalRank = 0;
+            private Int32 _GlobalRank = 0;
 
-            public string ClanTag
+            public String ClanTag
             {
                 get { return _ClanTag; }
                 set { _ClanTag = value; }
             }
 
-            public string Guid
+            public String Guid
             {
                 get { return _Guid; }
                 set { _Guid = value; }
             }
 
-            public string EAGuid
+            public String EAGuid
             {
                 get { return _EAGuid; }
                 set { _EAGuid = value; }
             }
 
-            public string IP
+            public String IP
             {
                 get { return _IP; }
                 set { _IP = value.Remove(value.IndexOf(":")); }
             }
 
-            public string PlayerCountryCode
+            public String PlayerCountryCode
             {
                 get { return _PlayerCountryCode; }
                 set { _PlayerCountryCode = value; }
             }
 
-            public int Score
+            public Int32 Score
             {
                 get { return _Score; }
                 set { _Score = value; }
             }
 
-            public int HighScore
+            public Int32 HighScore
             {
                 get { return _HighScore; }
                 set { _HighScore = value; }
             }
 
-            public int LastScore
+            public Int32 LastScore
             {
                 get { return _LastScore; }
                 set { _LastScore = value; }
             }
 
-            public int Kills
+            public Int32 Kills
             {
                 get { return _Kills; }
                 set { _Kills = value; }
             }
 
-            public int BeforeLeftKills
+            public Int32 BeforeLeftKills
             {
                 get { return _beforeleftKills; }
                 set { _beforeleftKills = value; }
             }
 
-            public int Headshots
+            public Int32 Headshots
             {
                 get { return _Headshots; }
                 set { _Headshots = value; }
             }
 
-            public int Deaths
+            public Int32 Deaths
             {
                 get { return _Deaths; }
                 set { _Deaths = value; }
             }
 
-            public int BeforeLeftDeaths
+            public Int32 BeforeLeftDeaths
             {
                 get { return _beforeleftDeaths; }
                 set { _beforeleftDeaths = value; }
             }
 
-            public int Suicides
+            public Int32 Suicides
             {
                 get { return _Suicides; }
                 set { _Suicides = value; }
             }
 
-            public int Teamkills
+            public Int32 Teamkills
             {
                 get { return _Teamkills; }
                 set { _Teamkills = value; }
             }
 
-            public int Playtime
+            public Int32 Playtime
             {
                 get { return _Playtime; }
                 set { _Playtime = value; }
             }
 
-            public int Rounds
+            public Int32 Rounds
             {
                 get { return _Rounds; }
                 set { _Rounds = value; }
@@ -1202,62 +1188,62 @@ Multigame Support<br>
                 set { _TimePlayerjoined = value; }
             }
 
-            public int PlayerleftServerScore
+            public Int32 PlayerleftServerScore
             {
                 get { return _PlayerleftServerScore; }
                 set { _PlayerleftServerScore = value; }
             }
 
-            public bool PlayerOnServer
+            public Boolean PlayerOnServer
             {
                 get { return _playerOnServer; }
                 set { _playerOnServer = value; }
             }
 
-            public int Rank
+            public Int32 Rank
             {
                 get { return _rank; }
                 set { _rank = value; }
             }
 
-            public int Killstreak
+            public Int32 Killstreak
             {
                 get { return _Killstreak; }
                 set { _Killstreak = value; }
             }
 
-            public int Deathstreak
+            public Int32 Deathstreak
             {
                 get { return _Deathstreak; }
                 set { _Deathstreak = value; }
             }
 
-            public int Wins
+            public Int32 Wins
             {
                 get { return _Wins; }
                 set { _Wins = value; }
             }
 
-            public int Losses
+            public Int32 Losses
             {
                 get { return _Losses; }
                 set { _Losses = value; }
             }
 
-            public int TeamId
+            public Int32 TeamId
             {
                 get { return _TeamId; }
                 set { _TeamId = value; }
             }
 
-            public int GlobalRank
+            public Int32 GlobalRank
             {
                 get { return _GlobalRank; }
                 set { _GlobalRank = value; }
             }
 
             //Methodes	
-            public void AddScore(int intScore)
+            public void AddScore(Int32 intScore)
             {
                 if (intScore != 0)
                 {
@@ -1274,9 +1260,9 @@ Multigame Support<br>
                 }
             }
 
-            public double KDR()
+            public Double KDR()
             {
-                double ratio = 0;
+                Double ratio = 0;
                 if (this._Deaths != 0)
                 {
                     ratio = Math.Round(Convert.ToDouble(this._Kills) / Convert.ToDouble(this._Deaths), 2);
@@ -1288,12 +1274,12 @@ Multigame Support<br>
                 return ratio;
             }
 
-            public Dictionary<string, Dictionary<string, CStats.CUsedWeapon>> getWeaponKills()
+            public Dictionary<String, Dictionary<String, CStats.CUsedWeapon>> getWeaponKills()
             {
                 return this.dicWeap;
             }
 
-            public void addKill(string strDmgType, string strweaponType, bool blheadshot)
+            public void addKill(String strDmgType, String strweaponType, Boolean blheadshot)
             {
                 this._Kills++;
                 if (blheadshot)
@@ -1329,7 +1315,7 @@ Multigame Support<br>
                 this._Awards.CheckOnKill(_Kills, _Headshots, _Deaths, _Killcount, _Deathcount);
             }
 
-            public void addDeath(string strDmgType, string strweaponType)
+            public void addDeath(String strDmgType, String strweaponType)
             {
                 this._Deaths++;
                 if (this.dicWeap.ContainsKey(strDmgType))
@@ -1365,12 +1351,12 @@ Multigame Support<br>
                 this._playerOnServer = false;
             }
 
-            public int TotalScore
+            public Int32 TotalScore
             {
                 get { return (this._PlayerleftServerScore + this._Score); }
             }
 
-            public int TotalPlaytime
+            public Int32 TotalPlaytime
             {
                 get
                 {
@@ -1397,57 +1383,57 @@ Multigame Support<br>
 
             public class CUsedWeapon
             {
-                private string _Name = "";
-                private string _FieldName = "";
-                private string _Slot = "";
-                private string _KitRestriction = "";
-                private int _Kills = 0;
-                private int _Headshots = 0;
-                private int _Deaths = 0;
+                private String _Name = "";
+                private String _FieldName = "";
+                private String _Slot = "";
+                private String _KitRestriction = "";
+                private Int32 _Kills = 0;
+                private Int32 _Headshots = 0;
+                private Int32 _Deaths = 0;
 
-                public int Kills
+                public Int32 Kills
                 {
                     get { return _Kills; }
                     set { _Kills = value; }
                 }
 
-                public int Headshots
+                public Int32 Headshots
                 {
                     get { return _Headshots; }
                     set { _Headshots = value; }
                 }
 
-                public int Deaths
+                public Int32 Deaths
                 {
                     get { return _Deaths; }
                     set { _Deaths = value; }
                 }
 
-                public string Name
+                public String Name
                 {
                     get { return _Name; }
                     set { _Name = value; }
                 }
 
-                public string FieldName
+                public String FieldName
                 {
                     get { return _FieldName; }
                     set { _FieldName = value; }
                 }
 
-                public string Slot
+                public String Slot
                 {
                     get { return _Slot; }
                     set { _Slot = value; }
                 }
 
-                public string KitRestriction
+                public String KitRestriction
                 {
                     get { return _KitRestriction; }
                     set { _KitRestriction = value; }
                 }
 
-                public CUsedWeapon(string name, string fieldname, string slot, string kitrestriction)
+                public CUsedWeapon(String name, String fieldname, String slot, String kitrestriction)
                 {
                     this._Name = name;
                     this._FieldName = fieldname;
@@ -1461,40 +1447,40 @@ Multigame Support<br>
 
             public class CBFBCS
             {
-                private int _rank;
-                private int _kills;
-                private int _deaths;
-                private int _score;
-                private double _skilllevel;
-                private double _time;
-                private double _elo;
-                private bool _Updated;
-                private bool _fetching;
-                private bool _noUpdate;
+                private Int32 _rank;
+                private Int32 _kills;
+                private Int32 _deaths;
+                private Int32 _score;
+                private Double _skilllevel;
+                private Double _time;
+                private Double _elo;
+                private Boolean _Updated;
+                private Boolean _fetching;
+                private Boolean _noUpdate;
 
-                public int Rank
+                public Int32 Rank
                 {
                     get { return _rank; }
                     set { _rank = value; }
                 }
 
-                public int Kills
+                public Int32 Kills
                 {
                     get { return _kills; }
                     set { _kills = value; }
                 }
 
-                public int Deaths
+                public Int32 Deaths
                 {
                     get { return _deaths; }
                     set { _deaths = value; }
                 }
 
-                public double KDR
+                public Double KDR
                 {
                     get
                     {
-                        double ratio = 0;
+                        Double ratio = 0;
                         if (this._deaths != 0)
                         {
                             ratio = Math.Round(Convert.ToDouble(this._kills) / Convert.ToDouble(this._deaths), 2);
@@ -1506,7 +1492,7 @@ Multigame Support<br>
                         return ratio;
                     }
                 }
-                public double SPM
+                public Double SPM
                 {
                     get
                     {
@@ -1514,43 +1500,43 @@ Multigame Support<br>
                     }
                 }
 
-                public int Score
+                public Int32 Score
                 {
                     get { return _score; }
                     set { _score = value; }
                 }
 
-                public double Skilllevel
+                public Double Skilllevel
                 {
                     get { return _skilllevel; }
                     set { _skilllevel = value; }
                 }
 
-                public double Time
+                public Double Time
                 {
                     get { return _time; }
                     set { _time = value; }
                 }
 
-                public double Elo
+                public Double Elo
                 {
                     get { return _elo; }
                     set { _elo = value; }
                 }
 
-                public bool Updated
+                public Boolean Updated
                 {
                     get { return _Updated; }
                     set { _Updated = value; }
                 }
 
-                public bool Fetching
+                public Boolean Fetching
                 {
                     get { return _fetching; }
                     set { _fetching = value; }
                 }
 
-                public bool NoUpdate
+                public Boolean NoUpdate
                 {
                     get { return _noUpdate; }
                     set { _noUpdate = value; }
@@ -1574,23 +1560,23 @@ Multigame Support<br>
             public class CAwards
             {
                 //Awards
-                private Dictionary<string, int> _dicAwards = new Dictionary<string, int>();
+                private Dictionary<String, Int32> _dicAwards = new Dictionary<String, Int32>();
 
                 //Constructor
                 public CAwards()
                 {
-                    this._dicAwards = new Dictionary<string, int>();
+                    this._dicAwards = new Dictionary<String, Int32>();
                 }
 
                 //Get and Set
-                public Dictionary<string, int> DicAwards
+                public Dictionary<String, Int32> DicAwards
                 {
                     get { return _dicAwards; }
                     set { _dicAwards = value; }
                 }
 
                 //Methodes
-                public void dicAdd(string strAward, int count)
+                public void dicAdd(String strAward, Int32 count)
                 {
                     if (this._dicAwards.ContainsKey(strAward))
                     {
@@ -1602,7 +1588,7 @@ Multigame Support<br>
                     }
                 }
 
-                public void CheckOnKill(int kills, int hs, int deaths, int ks, int ds)
+                public void CheckOnKill(Int32 kills, Int32 hs, Int32 deaths, Int32 ks, Int32 ds)
                 {
                     //Purple Heart
                     if (kills >= 5 && deaths >= 20 && ((Double)kills / (Double)deaths) == 0.25)
@@ -1632,7 +1618,7 @@ Multigame Support<br>
                     }
                 }
 
-                public void CheckOnDeath(int kills, int hs, int deaths, int ks, int ds)
+                public void CheckOnDeath(Int32 kills, Int32 hs, Int32 deaths, Int32 ks, Int32 ds)
                 {
                     //Purple Heart
                     if (kills >= 5 && deaths >= 20 && ((Double)kills / (Double)deaths) == 0.25)
@@ -1644,7 +1630,7 @@ Multigame Support<br>
 
             public class myDateTime
             {
-                private double _offset = 0;
+                private Double _offset = 0;
 
                 public DateTime Now
                 {
@@ -1654,13 +1640,13 @@ Multigame Support<br>
                         return dateValue.AddHours(_offset);
                     }
                 }
-                public myDateTime(double offset)
+                public myDateTime(Double offset)
                 {
                     this._offset = offset;
                 }
             }
 
-            public CStats(string guid, int score, int kills, int headshots, int deaths, int suicides, int teamkills, int playtime, double timeoffset, Dictionary<string, Dictionary<string, CStats.CUsedWeapon>> _weaponDic)
+            public CStats(String guid, Int32 score, Int32 kills, Int32 headshots, Int32 deaths, Int32 suicides, Int32 teamkills, Int32 playtime, Double timeoffset, Dictionary<String, Dictionary<String, CStats.CUsedWeapon>> _weaponDic)
             {
                 this.MyDateTime = new myDateTime(timeoffset);
                 this._ClanTag = String.Empty;
@@ -1692,10 +1678,10 @@ Multigame Support<br>
                 this.BFBCS_Stats = new CStats.CBFBCS();
                 this._Awards = new CAwards();
                 //this.dicWeap = new Dictionary<string,Dictionary<string,CUsedWeapon>>(_weaponDic);
-                foreach (KeyValuePair<string, Dictionary<string, CStats.CUsedWeapon>> pair in _weaponDic)
+                foreach (KeyValuePair<String, Dictionary<String, CStats.CUsedWeapon>> pair in _weaponDic)
                 {
-                    this.dicWeap.Add(pair.Key, new Dictionary<string, CStats.CUsedWeapon>());
-                    foreach (KeyValuePair<string, CStats.CUsedWeapon> subpair in pair.Value)
+                    this.dicWeap.Add(pair.Key, new Dictionary<String, CStats.CUsedWeapon>());
+                    foreach (KeyValuePair<String, CStats.CUsedWeapon> subpair in pair.Value)
                     {
                         this.dicWeap[pair.Key].Add(subpair.Key, new CStats.CUsedWeapon(subpair.Value.Name, subpair.Value.FieldName, subpair.Value.Slot, subpair.Value.KitRestriction));
                     }
@@ -1705,29 +1691,29 @@ Multigame Support<br>
 
         class C_ID_Cache
         {
-            private int _Id;
-            private int _StatsID;
-            private bool _PlayeronServer;
+            private Int32 _Id;
+            private Int32 _StatsID;
+            private Boolean _PlayeronServer;
 
-            public int Id
+            public Int32 Id
             {
                 get { return _Id; }
                 set { _Id = value; }
             }
 
-            public int StatsID
+            public Int32 StatsID
             {
                 get { return _StatsID; }
                 set { _StatsID = value; }
             }
 
-            public bool PlayeronServer
+            public Boolean PlayeronServer
             {
                 get { return _PlayeronServer; }
                 set { _PlayeronServer = value; }
             }
             //Constructor
-            public C_ID_Cache(int statsid, int id, bool playeronServer)
+            public C_ID_Cache(Int32 statsid, Int32 id, Boolean playeronServer)
             {
                 this._Id = id;
                 this._StatsID = statsid;
@@ -1737,22 +1723,22 @@ Multigame Support<br>
 
         class CKillerVictim
         {
-            string _Killer = String.Empty;
-            string _Victim = String.Empty;
+            String _Killer = String.Empty;
+            String _Victim = String.Empty;
 
-            public string Killer
+            public String Killer
             {
                 get { return _Killer; }
                 set { _Killer = value; }
             }
 
-            public string Victim
+            public String Victim
             {
                 get { return _Victim; }
                 set { _Victim = value; }
             }
 
-            public CKillerVictim(string killer, string victim)
+            public CKillerVictim(String killer, String victim)
             {
                 this._Killer = killer;
                 this._Victim = victim;
@@ -1764,17 +1750,17 @@ Multigame Support<br>
             private DateTime _timeMaploaded;
             private DateTime _timeMapStarted;
             private DateTime _timeRoundEnd;
-            private string _strMapname = String.Empty;
-            private string _strGamemode = String.Empty;
-            private int _intRound;
-            private int _intNumberOfRounds;
-            private List<int> _lstPlayers;
-            private int _intMinPlayers;
-            private int _intMaxPlayers;
-            private int _intServerplayermax;
-            private double _doubleAvgPlayers;
-            private int _intplayerleftServer;
-            private int _intplayerjoinedServer;
+            private String _strMapname = String.Empty;
+            private String _strGamemode = String.Empty;
+            private Int32 _intRound;
+            private Int32 _intNumberOfRounds;
+            private List<Int32> _lstPlayers;
+            private Int32 _intMinPlayers;
+            private Int32 _intMaxPlayers;
+            private Int32 _intServerplayermax;
+            private Double _doubleAvgPlayers;
+            private Int32 _intplayerleftServer;
+            private Int32 _intplayerjoinedServer;
             private myDateTime MyDateTime = new myDateTime(0);
 
             public DateTime TimeMaploaded
@@ -1795,67 +1781,67 @@ Multigame Support<br>
                 set { _timeRoundEnd = value; }
             }
 
-            public string StrMapname
+            public String StrMapname
             {
                 get { return _strMapname; }
                 set { _strMapname = value; }
             }
 
-            public string StrGamemode
+            public String StrGamemode
             {
                 get { return _strGamemode; }
                 set { _strGamemode = value; }
             }
 
-            public int IntRound
+            public Int32 IntRound
             {
                 get { return _intRound; }
                 set { _intRound = value; }
             }
 
-            public int IntNumberOfRounds
+            public Int32 IntNumberOfRounds
             {
                 get { return _intNumberOfRounds; }
                 set { _intNumberOfRounds = value; }
             }
 
-            public List<int> LstPlayers
+            public List<Int32> LstPlayers
             {
                 get { return _lstPlayers; }
                 set { _lstPlayers = value; }
             }
 
-            public int IntMinPlayers
+            public Int32 IntMinPlayers
             {
                 get { return _intMinPlayers; }
                 set { _intMinPlayers = value; }
             }
 
-            public int IntMaxPlayers
+            public Int32 IntMaxPlayers
             {
                 get { return _intMaxPlayers; }
                 set { _intMaxPlayers = value; }
             }
 
-            public int IntServerplayermax
+            public Int32 IntServerplayermax
             {
                 get { return _intServerplayermax; }
                 set { _intServerplayermax = value; }
             }
 
-            public double DoubleAvgPlayers
+            public Double DoubleAvgPlayers
             {
                 get { return _doubleAvgPlayers; }
                 set { _doubleAvgPlayers = value; }
             }
 
-            public int IntplayerleftServer
+            public Int32 IntplayerleftServer
             {
                 get { return _intplayerleftServer; }
                 set { _intplayerleftServer = value; }
             }
 
-            public int IntplayerjoinedServer
+            public Int32 IntplayerjoinedServer
             {
                 get { return _intplayerjoinedServer; }
                 set { _intplayerjoinedServer = value; }
@@ -1871,7 +1857,7 @@ Multigame Support<br>
                 this._timeRoundEnd = MyDateTime.Now;
             }
 
-            public void ListADD(int entry)
+            public void ListADD(Int32 entry)
             {
                 this._lstPlayers.Add(entry);
             }
@@ -1881,8 +1867,8 @@ Multigame Support<br>
                 this._intMaxPlayers = 0;
                 this._intMinPlayers = _intServerplayermax;
                 this._doubleAvgPlayers = 0;
-                int entries = 0;
-                foreach (int playercount in this._lstPlayers)
+                Int32 entries = 0;
+                foreach (Int32 playercount in this._lstPlayers)
                 {
                     if (playercount >= this._intMaxPlayers)
                         this._intMaxPlayers = playercount;
@@ -1909,7 +1895,7 @@ Multigame Support<br>
 
             public class myDateTime
             {
-                private double _offset = 0;
+                private Double _offset = 0;
 
                 public DateTime Now
                 {
@@ -1919,13 +1905,13 @@ Multigame Support<br>
                         return dateValue.AddHours(_offset);
                     }
                 }
-                public myDateTime(double offset)
+                public myDateTime(Double offset)
                 {
                     this._offset = offset;
                 }
             }
 
-            public CMapstats(DateTime timeMaploaded, string strMapname, int intRound, int intNumberOfRounds, double timeoffset)
+            public CMapstats(DateTime timeMaploaded, String strMapname, Int32 intRound, Int32 intNumberOfRounds, Double timeoffset)
             {
                 this._timeMaploaded = timeMaploaded;
                 this._strMapname = strMapname;
@@ -1936,7 +1922,7 @@ Multigame Support<br>
                 this._intMinPlayers = 0;
                 this._intplayerjoinedServer = 0;
                 this._intplayerleftServer = 0;
-                this._lstPlayers = new List<int>();
+                this._lstPlayers = new List<Int32>();
                 this._timeMapStarted = DateTime.MinValue;
                 this._timeRoundEnd = DateTime.MinValue;
                 this._strGamemode = String.Empty;
@@ -1946,21 +1932,21 @@ Multigame Support<br>
 
         class CSpamprotection
         {
-            private Dictionary<string, int> dicplayer;
-            private int _allowedRequests;
+            private Dictionary<String, Int32> dicplayer;
+            private Int32 _allowedRequests;
 
-            public CSpamprotection(int allowedRequests)
+            public CSpamprotection(Int32 allowedRequests)
             {
                 this._allowedRequests = allowedRequests;
-                this.dicplayer = new Dictionary<string, int>();
+                this.dicplayer = new Dictionary<String, Int32>();
             }
 
-            public bool isAllowed(string strSpeaker)
+            public Boolean isAllowed(String strSpeaker)
             {
-                bool result = false;
+                Boolean result = false;
                 if (this.dicplayer.ContainsKey(strSpeaker) == true)
                 {
-                    int i = this.dicplayer[strSpeaker];
+                    Int32 i = this.dicplayer[strSpeaker];
                     if (0 >= i)
                     {
                         //Player is blocked
@@ -1991,7 +1977,7 @@ Multigame Support<br>
 
         class myDateTime_W
         {
-            private double _offset = 0;
+            private Double _offset = 0;
 
             public DateTime Now
             {
@@ -2001,7 +1987,7 @@ Multigame Support<br>
                     return dateValue.AddHours(_offset);
                 }
             }
-            public myDateTime_W(double offset)
+            public myDateTime_W(Double offset)
             {
                 this._offset = offset;
             }
@@ -2010,13 +1996,12 @@ Multigame Support<br>
         class CStatsIngameCommands
         {
             //Class variables
-            private string _functioncall;
-            private string _commands;
-            private string _description;
-            private bool _boolEnabled;
+            private String _functioncall;
+            private String _commands;
+            private String _description;
+            private Boolean _boolEnabled;
 
-
-            public CStatsIngameCommands(string commands, string functioncall, bool boolEnabled, string description)
+            public CStatsIngameCommands(String commands, String functioncall, Boolean boolEnabled, String description)
             {
                 this._commands = commands;
                 this._functioncall = functioncall;
@@ -2025,25 +2010,25 @@ Multigame Support<br>
 
             }
 
-            public string commands
+            public String commands
             {
                 get { return this._commands; }
                 set { this._commands = value; }
             }
 
-            public string functioncall
+            public String functioncall
             {
                 get { return this._functioncall; }
                 set { this._functioncall = value; }
             }
 
-            public string description
+            public String description
             {
                 get { return this._description; }
                 set { this._description = value; }
             }
 
-            public bool boolEnabled
+            public Boolean boolEnabled
             {
                 get { return this._boolEnabled; }
                 set { this._boolEnabled = value; }

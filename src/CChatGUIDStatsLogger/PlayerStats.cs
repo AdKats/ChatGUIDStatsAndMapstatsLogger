@@ -37,7 +37,7 @@ namespace PRoConEvents
     {
         private Int32 GetPlayerTeamID(String strSoldierName)
         {
-            int iTeamID = 0; // Neutral Team ID
+            Int32 iTeamID = 0; // Neutral Team ID
             if (this.m_dicPlayers.ContainsKey(strSoldierName) == true)
             {
                 iTeamID = this.m_dicPlayers[strSoldierName].TeamID;
@@ -137,7 +137,7 @@ namespace PRoConEvents
                     //Regular Kill: Player killed an Enemy
                     this.AddKillToStats(kKillerVictimDetails.Killer.SoldierName, this.DamageClass[kKillerVictimDetails.DamageType], kKillerVictimDetails.DamageType, kKillerVictimDetails.Headshot);
                     this.AddDeathToStats(kKillerVictimDetails.Victim.SoldierName, this.DamageClass[kKillerVictimDetails.DamageType], kKillerVictimDetails.DamageType);
-                    if (string.Equals(kKillerVictimDetails.DamageType, "Melee"))
+                    if (String.Equals(kKillerVictimDetails.DamageType, "Melee"))
                     {	//Dogtagstracking
                         CKillerVictim KnifeKill = new CKillerVictim(kKillerVictimDetails.Killer.SoldierName, kKillerVictimDetails.Victim.SoldierName);
                         if (m_dicKnifeKills.ContainsKey(KnifeKill) == true)
@@ -157,15 +157,15 @@ namespace PRoConEvents
         {
             lock (this.streamlock)
             {
-                bool success = false;
-                int attemptCount = 0;
+                Boolean success = false;
+                Int32 attemptCount = 0;
                 try
                 {
                     DateTime StartStreamingTime = MyDateTime.Now;
                     //Make a copy of Statstracker to prevent unwanted errors
-                    Dictionary<string, CStats> StatsTrackerCopy = new Dictionary<string, CStats>(this.StatsTracker);
+                    Dictionary<String, CStats> StatsTrackerCopy = new Dictionary<String, CStats>(this.StatsTracker);
                     //C_ID_Cache id_cache;
-                    List<string> lstEAGUIDs = new List<string>();
+                    List<String> lstEAGUIDs = new List<String>();
                     //Clearing the old Dictionary
                     StatsTracker.Clear();
                     if (isStreaming)
@@ -231,7 +231,7 @@ namespace PRoConEvents
                                     {
                                         this.DebugInfo("Trace", "PlayerStats Write querys");
                                         //Prepare EAGUID List
-                                        foreach (KeyValuePair<string, CStats> kvp in StatsTrackerCopy)
+                                        foreach (KeyValuePair<String, CStats> kvp in StatsTrackerCopy)
                                         {
                                             if (kvp.Value.EAGuid.Length > 1)
                                             {
@@ -251,7 +251,7 @@ namespace PRoConEvents
                                             try
                                             {
                                                 MySqlTrans = MySqlConn.BeginTransaction();
-                                                foreach (KeyValuePair<string, CStats> kvp in StatsTrackerCopy)
+                                                foreach (KeyValuePair<String, CStats> kvp in StatsTrackerCopy)
                                                 {
                                                     if (kvp.Key.Length > 0 && kvp.Value.EAGuid.Length > 1)
                                                     {
@@ -365,7 +365,7 @@ namespace PRoConEvents
                                             {
                                                 //Start of the Transaction
                                                 MySqlTrans = MySqlConn.BeginTransaction();
-                                                foreach (KeyValuePair<string, CStats> kvp in StatsTrackerCopy)
+                                                foreach (KeyValuePair<String, CStats> kvp in StatsTrackerCopy)
                                                 {
                                                     if (kvp.Value.EAGuid.Length > 0)
                                                     {
@@ -435,7 +435,7 @@ namespace PRoConEvents
                                                     //Start of the Transaction
                                                     MySqlTrans = MySqlConn.BeginTransaction();
 
-                                                    foreach (KeyValuePair<string, CStats> kvp in StatsTrackerCopy)
+                                                    foreach (KeyValuePair<String, CStats> kvp in StatsTrackerCopy)
                                                     {
                                                         if (this.m_ID_cache.ContainsKey(kvp.Value.EAGuid) == false)
                                                         {
@@ -445,9 +445,9 @@ namespace PRoConEvents
                                                             }
                                                             continue;
                                                         }
-                                                        Dictionary<string, Dictionary<string, CStats.CUsedWeapon>> tempdic;
+                                                        Dictionary<String, Dictionary<String, CStats.CUsedWeapon>> tempdic;
                                                         //tempdic = StatsTrackerCopy[kvp.Key].getWeaponKills();
-                                                        tempdic = new Dictionary<string, Dictionary<string, CStats.CUsedWeapon>>(kvp.Value.getWeaponKills());
+                                                        tempdic = new Dictionary<String, Dictionary<String, CStats.CUsedWeapon>>(kvp.Value.getWeaponKills());
                                                         if (GlobalDebugMode.Equals("Trace"))
                                                         {
                                                             this.DebugInfo("Trace", "PlayerID: " + this.m_ID_cache[kvp.Value.EAGuid].Id);
@@ -456,7 +456,7 @@ namespace PRoConEvents
 
                                                         if (this.m_ID_cache[kvp.Value.EAGuid].StatsID >= 1)
                                                         {
-                                                            string playerstatsSQL = @"INSERT INTO " + this.tbl_playerstats + @"(StatsID, Score, Kills, Headshots, Deaths, Suicide, TKs, Playtime, Rounds, FirstSeenOnServer, LastSeenOnServer, Killstreak, Deathstreak, HighScore , Wins, Losses)
+                                                            String playerstatsSQL = @"INSERT INTO " + this.tbl_playerstats + @"(StatsID, Score, Kills, Headshots, Deaths, Suicide, TKs, Playtime, Rounds, FirstSeenOnServer, LastSeenOnServer, Killstreak, Deathstreak, HighScore , Wins, Losses)
 																VALUES(@StatsID, @Score, @Kills, @Headshots, @Deaths, @Suicide, @TKs, @Playtime, @Rounds, @FirstSeenOnServer, @LastSeenOnServer, @Killstreak, @Deathstreak, @HighScore , @Wins, @Losses) 
                                                                 ON DUPLICATE KEY UPDATE Score = Score + @Score, Kills = Kills + @Kills,Headshots = Headshots + @Headshots, Deaths = Deaths + @Deaths, Suicide = Suicide + @Suicide, TKs = TKs + @TKs, Playtime = Playtime + @Playtime, Rounds = Rounds + @Rounds, LastSeenOnServer = @LastSeenOnServer, Killstreak = GREATEST(Killstreak,@Killstreak),Deathstreak = GREATEST(Deathstreak, @Deathstreak) ,HighScore = GREATEST(HighScore, @HighScore), Wins = Wins + @Wins, Losses = Losses + @Losses ";
 
@@ -484,16 +484,16 @@ namespace PRoConEvents
                                                             {
                                                                 this.DebugInfo("Trace", "Weaponstats Write querys");
 
-                                                                string NewWeaponStatsSQL = @"INSERT INTO `" + this.tbl_weapons_stats + @"` (`StatsID`,`WeaponID`,`Kills`,`Headshots`,`Deaths`)
+                                                                String NewWeaponStatsSQL = @"INSERT INTO `" + this.tbl_weapons_stats + @"` (`StatsID`,`WeaponID`,`Kills`,`Headshots`,`Deaths`)
                                                                                          VALUES(@StatsID, @WeaponID, @Kills, @Headshots, @Deaths)
                                                                                          ON DUPLICATE KEY UPDATE  `Kills` = `Kills` + @Kills ,`Headshots` = `Headshots` + @Headshots,`Deaths` = `Deaths` + @Deaths";
 
-                                                                foreach (KeyValuePair<string, Dictionary<string, CStats.CUsedWeapon>> branch in tempdic)
+                                                                foreach (KeyValuePair<String, Dictionary<String, CStats.CUsedWeapon>> branch in tempdic)
                                                                 {
                                                                     //Build Query for Weaponstats
                                                                     if (tempdic != null)
                                                                     {
-                                                                        foreach (KeyValuePair<string, CStats.CUsedWeapon> leaf in branch.Value)
+                                                                        foreach (KeyValuePair<String, CStats.CUsedWeapon> leaf in branch.Value)
                                                                         {
                                                                             if (leaf.Value.Kills != 0 || leaf.Value.Kills != 0 || leaf.Value.Deaths != 0)
                                                                             {
@@ -588,8 +588,8 @@ namespace PRoConEvents
                                                     //Start of the Transaction
                                                     MySqlTrans = MySqlConn.BeginTransaction();
                                                     this.DebugInfo("Trace", "Dogtagstats Write querys");
-                                                    string KnifeSQL = String.Empty;
-                                                    foreach (KeyValuePair<CKillerVictim, int> kvp in m_dicKnifeKills)
+                                                    String KnifeSQL = String.Empty;
+                                                    foreach (KeyValuePair<CKillerVictim, Int32> kvp in m_dicKnifeKills)
                                                     {
                                                         if (StatsTrackerCopy.ContainsKey(kvp.Key.Killer) == false || StatsTrackerCopy.ContainsKey(kvp.Key.Victim) == false)
                                                         {
@@ -658,12 +658,12 @@ namespace PRoConEvents
 
                                                 if (this.m_sessionON == enumBoolYesNo.Yes && this.m_enSessionTracking == enumBoolYesNo.Yes)
                                                 {
-                                                    bool containsvaildsessions = false;
+                                                    Boolean containsvaildsessions = false;
                                                     StringBuilder InsertSQLSession = new StringBuilder(500);
                                                     InsertSQLSession.Append(@"INSERT INTO " + this.tbl_sessions + @" (`StatsID`, `StartTime`,`EndTime`, `Score`, `Kills`, `Headshots`, `Deaths`, `TKs`, `Suicide`,`RoundCount`, `Playtime`, `HighScore`, `Killstreak`, `Deathstreak`, `Wins`, `Losses`) VALUES");
 
                                                     this.DebugInfo("Trace", this.lstpassedSessions.Count + " Sessions to write to Sessiontable");
-                                                    int i = 0;
+                                                    Int32 i = 0;
                                                     foreach (CStats session in this.lstpassedSessions)
                                                     {
                                                         if (this.m_ID_cache.ContainsKey(session.EAGuid) == true)
@@ -760,7 +760,7 @@ namespace PRoConEvents
                                                 try
                                                 {
                                                     MySqlTrans = MySqlConn.BeginTransaction();
-                                                    string serverstats = @"REPLACE INTO " + this.tbl_server_stats + @" SELECT tsp.ServerID, Count(*) AS CountPlayers, SUM(tps.Score) AS SumScore, AVG(tps.Score) AS AvgScore, SUM(tps.Kills) AS SumKills,  AVG(tps.Kills) AS AvgKills, SUM(tps.Headshots) AS SumHeadshots,
+                                                    String serverstats = @"REPLACE INTO " + this.tbl_server_stats + @" SELECT tsp.ServerID, Count(*) AS CountPlayers, SUM(tps.Score) AS SumScore, AVG(tps.Score) AS AvgScore, SUM(tps.Kills) AS SumKills,  AVG(tps.Kills) AS AvgKills, SUM(tps.Headshots) AS SumHeadshots,
                                                         AVG(tps.Headshots) AS AvgHeadshots, SUM(tps.Deaths) AS SumDeaths, AVG(tps.Deaths) AS AvgDeaths, SUM(tps.Suicide) AS SumSuicide, AVG(tps.Suicide) AS AvgSuicide, SUM(tps.TKs) AS SumTKs, AVG(tps.TKs) AS AvgTKs,
                                                         SUM(tps.Playtime) AS SumPlaytime, AVG(tps.Playtime) AS AvgPlaytime, SUM(tps.Rounds) AS SumRounds, AVG(tps.Rounds) AS AvgRounds 
                                                         FROM " + this.tbl_playerstats + @" tps
@@ -805,9 +805,9 @@ namespace PRoConEvents
                                         StatsTrackerCopy.Clear();
                                         this.m_dicKnifeKills.Clear();
 
-                                        List<string> leftplayerlist = new List<string>();
+                                        List<String> leftplayerlist = new List<String>();
 
-                                        foreach (KeyValuePair<string, C_ID_Cache> kvp in this.m_ID_cache)
+                                        foreach (KeyValuePair<String, C_ID_Cache> kvp in this.m_ID_cache)
                                         {
                                             if (this.m_ID_cache[kvp.Key].PlayeronServer == false)
                                             {
@@ -816,7 +816,7 @@ namespace PRoConEvents
                                             // Because so playerleft event seems not been reported by the server
                                             this.m_ID_cache[kvp.Key].PlayeronServer = false;
                                         }
-                                        foreach (string player in leftplayerlist)
+                                        foreach (String player in leftplayerlist)
                                         {
                                             this.m_ID_cache.Remove(player);
                                             //this.DebugInfo("Removed " + player);
@@ -891,15 +891,15 @@ namespace PRoConEvents
             }
         }
 
-        private void WelcomeStats(string strSpeaker)
+        private void WelcomeStats(String strSpeaker)
         {
-            List<string> result = new List<string>();
+            List<String> result = new List<String>();
             if (this.m_enWelcomeStats == enumBoolYesNo.Yes)
             {
                 if (this.m_enLogSTATS == enumBoolYesNo.Yes)
                 {
-                    string SQL = String.Empty;
-                    string strMSG = String.Empty;
+                    String SQL = String.Empty;
+                    String strMSG = String.Empty;
                     //Statsquery with KDR
                     //Rankquery
                     if (m_enRankingByScore == enumBoolYesNo.Yes)
@@ -969,7 +969,7 @@ namespace PRoConEvents
                             {
                                 foreach (DataRow row in resultTable.Rows)
                                 {
-                                    result = new List<string>(this.m_lstPlayerWelcomeStatsMessage);
+                                    result = new List<String>(this.m_lstPlayerWelcomeStatsMessage);
                                     result = this.ListReplace(result, "%serverName%", this.serverName);
                                     result = this.ListReplace(result, "%playerName%", row["SoldierName"].ToString());
                                     result = this.ListReplace(result, "%playerScore%", row["Score"].ToString());
@@ -999,7 +999,7 @@ namespace PRoConEvents
                                     TimeSpan span = new TimeSpan(0, 0, Convert.ToInt32(row["Playtime"]));
                                     result = this.ListReplace(result, "%playerPlaytime%", span.ToString());
                                     //SPM
-                                    double SPM;
+                                    Double SPM;
                                     if (Convert.ToDouble(row["Playtime"]) != 0)
                                     {
                                         SPM = (Convert.ToDouble(row["Score"]) / (Convert.ToDouble(row["Playtime"]) / 60));
@@ -1025,7 +1025,7 @@ namespace PRoConEvents
                     else
                     {
                         result.Clear();
-                        result = new List<string>(this.m_lstNewPlayerWelcomeMsg);
+                        result = new List<String>(this.m_lstNewPlayerWelcomeMsg);
                         result = this.ListReplace(result, "%serverName%", this.serverName);
                         result = this.ListReplace(result, "%playerName%", strSpeaker);
                         //result.Add(m_strNewPlayerWelcomeMsg.Replace("%serverName%", this.serverName).Replace("%playerName%", strSpeaker));
@@ -1035,14 +1035,14 @@ namespace PRoConEvents
             }
         }
 
-        private void GetPlayerStats(string strSpeaker, int delay, string scope)
+        private void GetPlayerStats(String strSpeaker, Int32 delay, String scope)
         {
-            List<string> result = new List<string>();
+            List<String> result = new List<String>();
             if (this.m_enLogSTATS == enumBoolYesNo.Yes)
             {
-                string SQL = String.Empty;
-                string strMSG = String.Empty;
-                double kdr = 0;
+                String SQL = String.Empty;
+                String strMSG = String.Empty;
+                Double kdr = 0;
                 //Statsquery with KDR
                 //Rankquery
                 if (m_enRankingByScore == enumBoolYesNo.Yes)
@@ -1111,7 +1111,7 @@ namespace PRoConEvents
                         {
                             foreach (DataRow row in resultTable.Rows)
                             {
-                                result = new List<string>(m_lstPlayerStatsMessage);
+                                result = new List<String>(m_lstPlayerStatsMessage);
                                 result = this.ListReplace(result, "%playerName%", row["SoldierName"].ToString());
                                 result = this.ListReplace(result, "%playerScore%", row["Score"].ToString());
                                 result = this.ListReplace(result, "%playerKills%", row["Kills"].ToString());
@@ -1140,7 +1140,7 @@ namespace PRoConEvents
                                 TimeSpan span = new TimeSpan(0, 0, Convert.ToInt32(row["Playtime"]));
                                 result = this.ListReplace(result, "%playerPlaytime%", span.ToString());
                                 //SPM
-                                double SPM;
+                                Double SPM;
                                 if (Convert.ToDouble(row["Playtime"]) != 0)
                                 {
                                     SPM = (Convert.ToDouble(row["Score"]) / (Convert.ToDouble(row["Playtime"]) / 60));
@@ -1172,13 +1172,13 @@ namespace PRoConEvents
             }
         }
 
-        private void GetTop10(string strSpeaker, int delay, string scope)
+        private void GetTop10(String strSpeaker, Int32 delay, String scope)
         {
-            List<string> result = new List<string>();
+            List<String> result = new List<String>();
             if (this.m_enTop10ingame == enumBoolYesNo.Yes)
             {
-                string SQL = String.Empty;
-                int rank = 0;
+                String SQL = String.Empty;
+                Int32 rank = 0;
                 //Top10 Query
                 if (this.m_enRankingByScore == enumBoolYesNo.Yes)
                 {
@@ -1240,12 +1240,12 @@ namespace PRoConEvents
                     try
                     {
                         resultTable = this.SQLquery(SQL, dynParams);
-                        result = new List<string>();
+                        result = new List<String>();
                         //Top 10 Header
                         result.Add(this.m_strTop10Header.Replace("%serverName%", this.serverName));
                         StringBuilder Top10Row = new StringBuilder();
-                        double kdr1;
-                        double khr;
+                        Double kdr1;
+                        Double khr;
                         if (resultTable.Rows != null)
                         {
                             foreach (DataRow row in resultTable.Rows)
@@ -1293,13 +1293,13 @@ namespace PRoConEvents
             }
         }
 
-        private void GetWeaponStats(string strWeapon, string strPlayer, string scope)
+        private void GetWeaponStats(String strWeapon, String strPlayer, String scope)
         {
 
             this.DebugInfo("Trace", "GetWeaponStats: " + strPlayer + " " + strWeapon);
-            int delay = 0;
-            string SQL = String.Empty;
-            List<string> result = new List<string>();
+            Int32 delay = 0;
+            String SQL = String.Empty;
+            List<String> result = new List<String>();
 
             if (this.DamageClass.ContainsKey(strWeapon) == true)
             //if (this.WeaponMappingDic.ContainsKey(strWeapon) == true)
@@ -1385,7 +1385,7 @@ namespace PRoConEvents
                         {
                             foreach (DataRow row in resultTable.Rows)
                             {
-                                result = new List<string>(this.m_lstWeaponstatsMsg);
+                                result = new List<String>(this.m_lstWeaponstatsMsg);
                                 if (row[0] != Convert.DBNull || row[1] != Convert.DBNull || row[2] != Convert.DBNull)
                                 {
                                     result = this.ListReplace(result, "%playerKills%", row[0].ToString());
@@ -1394,7 +1394,7 @@ namespace PRoConEvents
                                     result = this.ListReplace(result, "%playerRank%", row[3].ToString());
                                     result = this.ListReplace(result, "%allRanks%", row[4].ToString());
 
-                                    double khr = 0;
+                                    Double khr = 0;
                                     if (Convert.ToDouble(row[0]) != 0)
                                     {
                                         khr = Convert.ToDouble(row[1]) / Convert.ToDouble(row[0]);
@@ -1405,7 +1405,7 @@ namespace PRoConEvents
                                     {
                                         khr = 0;
                                     }
-                                    double kdr = 0;
+                                    Double kdr = 0;
                                     if (Convert.ToDouble(row[2]) != 0)
                                     {
                                         kdr = Convert.ToDouble(row[0]) / Convert.ToDouble(row[2]);
@@ -1451,15 +1451,15 @@ namespace PRoConEvents
             }
         }
 
-        private void GetWeaponTop10(string strWeapon, string strPlayer, int delay, string scope)
+        private void GetWeaponTop10(String strWeapon, String strPlayer, Int32 delay, String scope)
         {
             this.DebugInfo("Trace", "GetWeaponTop10: strWeapon = " + strWeapon);
-            int delaytop10 = 0;
-            double kdr = 0;
-            double khr = 0;
-            int rank = 0;
-            string SQL = String.Empty;
-            List<string> result = new List<string>();
+            Int32 delaytop10 = 0;
+            Double kdr = 0;
+            Double khr = 0;
+            Int32 rank = 0;
+            String SQL = String.Empty;
+            List<String> result = new List<String>();
             if (this.DamageClass.ContainsKey(strWeapon) == true)
             {
                 //string tbl_weapons = "tbl_weapons_" + this.DamageClass[strWeapon].ToLower() + this.tableSuffix;
@@ -1504,7 +1504,7 @@ namespace PRoConEvents
                     DataTable resultTable;
                     try
                     {
-                        result = new List<string>();
+                        result = new List<String>();
                         //result.Add("Top 10 Killers with %Weapon%");
                         result.Add(this.m_strWeaponTop10Header.Replace("%serverName%", this.serverName));
                         resultTable = this.SQLquery(SQL, dynParams);
@@ -1566,11 +1566,11 @@ namespace PRoConEvents
             }
         }
 
-        private void GetDogtags(string strPlayer, int delay, string scope)
+        private void GetDogtags(String strPlayer, Int32 delay, String scope)
         {
-            int delaydogtags = 0;
-            string SQL = String.Empty;
-            string SQL2 = String.Empty;
+            Int32 delaydogtags = 0;
+            String SQL = String.Empty;
+            String SQL2 = String.Empty;
             if (this.m_enOverallRanking == enumBoolYesNo.Yes)
             {
                 SQL = @"SELECT pd.SoldierName, SUM(dt.Count) AS Count
@@ -1606,8 +1606,8 @@ namespace PRoConEvents
                          ORDER BY Count DESC Limit 3";
             }
 
-            List<string> result = new List<string>();
-            List<string> result2 = new List<string>();
+            List<String> result = new List<String>();
+            List<String> result2 = new List<String>();
 
             if (this.StatsTracker.ContainsKey(strPlayer) == false)
             {
@@ -1698,14 +1698,14 @@ namespace PRoConEvents
             }
         }
 
-        private void GetPlayerOfTheDay(string strSpeaker, int delay, string scope)
+        private void GetPlayerOfTheDay(String strSpeaker, Int32 delay, String scope)
         {
-            List<string> result = new List<string>();
+            List<String> result = new List<String>();
             if (this.m_enLogSTATS == enumBoolYesNo.Yes)
             {
-                string SQL = string.Empty;
+                String SQL = String.Empty;
 
-                string SQL_SELECT = @"SELECT 
+                String SQL_SELECT = @"SELECT 
                                 tpd.SoldierName AS SoldierName,
                                 SUM(ts.Score) AS Score, 
                                 SUM(ts.Kills) AS Kills,
@@ -1722,14 +1722,14 @@ namespace PRoConEvents
                                 SUM(ts.Losses ) AS Losses, ";
 
 
-                string SQL_JOINS = @" FROM " + this.tbl_sessions + @" ts 
+                String SQL_JOINS = @" FROM " + this.tbl_sessions + @" ts 
                                       INNER JOIN " + this.tbl_server_player + @" tsp USING(StatsID)
                                       INNER JOIN " + this.tbl_playerdata + @" tpd USING(PlayerID) ";
 
-                string SQL_CONDS = string.Empty;
+                String SQL_CONDS = String.Empty;
 
-                string strMSG = String.Empty;
-                double kdr = 0;
+                String strMSG = String.Empty;
+                Double kdr = 0;
                 //Statsquery with KDR
                 //Rankquery
                 if (m_enRankingByScore == enumBoolYesNo.Yes)
@@ -1805,7 +1805,7 @@ namespace PRoConEvents
                         {
                             foreach (DataRow row in resultTable.Rows)
                             {
-                                result = new List<string>(m_lstPlayerOfTheDayMessage);
+                                result = new List<String>(m_lstPlayerOfTheDayMessage);
                                 result = this.ListReplace(result, "%playerName%", row["SoldierName"].ToString());
                                 result = this.ListReplace(result, "%playerScore%", row["Score"].ToString());
                                 result = this.ListReplace(result, "%playerKills%", row["Kills"].ToString());
@@ -1834,7 +1834,7 @@ namespace PRoConEvents
                                 TimeSpan span = new TimeSpan(0, 0, Convert.ToInt32(row["Playtime"]));
                                 result = this.ListReplace(result, "%playerPlaytime%", span.ToString());
                                 //SPM
-                                double SPM;
+                                Double SPM;
                                 if (Convert.ToDouble(row["Playtime"]) != 0)
                                 {
                                     SPM = (Convert.ToDouble(row["Score"]) / (Convert.ToDouble(row["Playtime"]) / 60));
@@ -1866,12 +1866,12 @@ namespace PRoConEvents
             }
         }
 
-        private void GetTop10ForPeriod(string strSpeaker, int delay, string scope, int intdays)
+        private void GetTop10ForPeriod(String strSpeaker, Int32 delay, String scope, Int32 intdays)
         {
-            List<string> result = new List<string>();
+            List<String> result = new List<String>();
             if (this.m_enTop10ingame == enumBoolYesNo.Yes)
             {
-                string SQL = @"SELECT 
+                String SQL = @"SELECT 
                                 tpd.SoldierName AS SoldierName,
                                 SUM(ts.Score) AS Score, 
                                 SUM(ts.Kills) AS Kills,
@@ -1884,7 +1884,7 @@ namespace PRoConEvents
                                 FROM " + this.tbl_sessions + @" ts 
                                 INNER JOIN " + this.tbl_server_player + @" tsp USING(StatsID)
                                 INNER JOIN " + this.tbl_playerdata + @" tpd USING(PlayerID) ";
-                int rank = 0;
+                Int32 rank = 0;
                 //Top10 Query
                 if (m_enRankingByScore == enumBoolYesNo.Yes)
                 {
@@ -1940,12 +1940,12 @@ namespace PRoConEvents
                     try
                     {
                         resultTable = this.SQLquery(SQL, dynParams);
-                        result = new List<string>();
+                        result = new List<String>();
                         //Top 10 Header
                         result.Add(this.m_strTop10HeaderForPeriod.Replace("%serverName%", this.serverName).Replace("%intervaldays%", intdays.ToString()));
                         StringBuilder Top10Row = new StringBuilder();
-                        double kdr1;
-                        double khr;
+                        Double kdr1;
+                        Double khr;
                         if (resultTable.Rows != null)
                         {
                             foreach (DataRow row in resultTable.Rows)
@@ -1995,7 +1995,7 @@ namespace PRoConEvents
 
         //Add to stats
 
-        private void AddKillToStats(string strPlayerName, string DmgType, string weapon, bool headshot)
+        private void AddKillToStats(String strPlayerName, String DmgType, String weapon, Boolean headshot)
         {
             if (StatsTracker.ContainsKey(strPlayerName))
             {
@@ -2014,7 +2014,7 @@ namespace PRoConEvents
             }
         }
 
-        public void AddDeathToStats(string strPlayerName, string DmgType, string weapon)
+        public void AddDeathToStats(String strPlayerName, String DmgType, String weapon)
         {
             if (StatsTracker.ContainsKey(strPlayerName))
             {
@@ -2034,7 +2034,7 @@ namespace PRoConEvents
             }
         }
 
-        private void AddSuicideToStats(string strPlayerName, string DmgType, string weapon)
+        private void AddSuicideToStats(String strPlayerName, String DmgType, String weapon)
         {
             if (StatsTracker.ContainsKey(strPlayerName))
             {
@@ -2056,7 +2056,7 @@ namespace PRoConEvents
             }
         }
 
-        private void AddTeamKillToStats(string strPlayerName)
+        private void AddTeamKillToStats(String strPlayerName)
         {
             if (StatsTracker.ContainsKey(strPlayerName))
             {
@@ -2114,31 +2114,31 @@ namespace PRoConEvents
                 this.m_dicKeywords.Clear();
                 try
                 {
-                    foreach (KeyValuePair<string, string> kvp in this.DamageClass)
+                    foreach (KeyValuePair<String, String> kvp in this.DamageClass)
                     {
                         if (this.m_dicKeywords.ContainsKey(kvp.Key) == false)
                         {
-                            this.m_dicKeywords.Add(kvp.Key, new List<string>());
+                            this.m_dicKeywords.Add(kvp.Key, new List<String>());
                             this.m_dicKeywords[kvp.Key].Add(kvp.Key.ToUpper());
 
-                            string[] weaponName = Regex.Replace(kvp.Key.Replace("Weapons/", "").Replace("Gadgets/", ""), @"XP\d_", "").Split('/');
-                            string friendlyname = weaponName[0].Replace(' ', '_').Replace(".", "").Replace("U_", "").ToUpper();
+                            String[] weaponName = Regex.Replace(kvp.Key.Replace("Weapons/", "").Replace("Gadgets/", ""), @"XP\d_", "").Split('/');
+                            String friendlyname = weaponName[0].Replace(' ', '_').Replace(".", "").Replace("U_", "").ToUpper();
                             if (this.m_dicKeywords.ContainsKey(friendlyname) == false)
                             {
                                 this.m_dicKeywords[kvp.Key].Add(friendlyname);
                             }
                         }
                     }
-                    string dicKey = String.Empty;
-                    string dicValue = String.Empty;
-                    foreach (string line in m_lstTableconfig)
+                    String dicKey = String.Empty;
+                    String dicValue = String.Empty;
+                    foreach (String line in m_lstTableconfig)
                     {
                         if (line.Contains("{") && line.Contains("}"))
                         {
                             dicKey = line.Remove(line.IndexOf("{"));
                             dicValue = line.Replace("{", ",");
                             dicValue = dicValue.Replace("}", "").ToUpper();
-                            string[] arrStrings = dicValue.Split(',');
+                            String[] arrStrings = dicValue.Split(',');
                             if (this.m_dicKeywords.ContainsKey(dicKey))
                             {
                                 //Prüfen
@@ -2164,12 +2164,12 @@ namespace PRoConEvents
             }
         }
 
-        public string FindKeyword(string strToFind)
+        public String FindKeyword(String strToFind)
         {
             try
             {
                 this.DebugInfo("Trace", "FindKeyword: " + strToFind);
-                foreach (KeyValuePair<string, List<string>> kvp in this.m_dicKeywords)
+                foreach (KeyValuePair<String, List<String>> kvp in this.m_dicKeywords)
                 {
                     if (kvp.Value.Contains(strToFind.Replace(" ", "")))
                     {
@@ -2185,17 +2185,17 @@ namespace PRoConEvents
             return String.Empty;
         }
 
-        public List<string> ListReplace(List<string> targetlist, string wordToReplace, string replacement)
+        public List<String> ListReplace(List<String> targetlist, String wordToReplace, String replacement)
         {
-            List<string> lstResult = new List<string>();
-            foreach (string substring in targetlist)
+            List<String> lstResult = new List<String>();
+            foreach (String substring in targetlist)
             {
                 lstResult.Add(substring.Replace(wordToReplace, replacement));
             }
             return lstResult;
         }
 
-        private void CheckMessageLength(string strMessage, int intMessagelength)
+        private void CheckMessageLength(String strMessage, Int32 intMessagelength)
         {
             if (strMessage.Length > intMessagelength)
             {
@@ -2206,7 +2206,7 @@ namespace PRoConEvents
             }
         }
 
-        private void CreateSession(string SoldierName, int intScore, string EAGUID)
+        private void CreateSession(String SoldierName, Int32 intScore, String EAGUID)
         {
             if (this.ServerID == 0)
             {
@@ -2269,10 +2269,10 @@ namespace PRoConEvents
             }
         }
         */
-        private void GetServerStats(string SoldierName, int delay, string scope)
+        private void GetServerStats(String SoldierName, Int32 delay, String scope)
         {
-            string SQL = @"SELECT * FROM " + this.tbl_server_stats + @" WHERE ServerID = @ServerID";
-            List<string> result = new List<string>(this.m_lstServerstatsMsg);
+            String SQL = @"SELECT * FROM " + this.tbl_server_stats + @" WHERE ServerID = @ServerID";
+            List<String> result = new List<String>(this.m_lstServerstatsMsg);
             try
             {
                 {
@@ -2342,7 +2342,7 @@ namespace PRoConEvents
 
         }
 
-        private void GetSession(string SoldierName, int delay, string scope)
+        private void GetSession(String SoldierName, Int32 delay, String scope)
         {
             if (this.ServerID == 0)
             {
@@ -2352,7 +2352,7 @@ namespace PRoConEvents
             {
                 if (this.m_dicSession.ContainsKey(SoldierName) && this.m_sessionON == enumBoolYesNo.Yes)
                 {
-                    List<string> result = new List<string>();
+                    List<String> result = new List<String>();
                     result = m_lstSessionMessage;
                     result = ListReplace(result, "%playerName%", SoldierName);
                     result = ListReplace(result, "%playerScore%", this.m_dicSession[SoldierName].Score.ToString());
@@ -2366,10 +2366,10 @@ namespace PRoConEvents
                     result = ListReplace(result, "%playerTK%", this.m_dicSession[SoldierName].Teamkills.ToString());
                     result = ListReplace(result, "%startRank%", this.m_dicSession[SoldierName].Rank.ToString());
                     //Rankdiff
-                    int playerRank = this.GetRank(SoldierName);
+                    Int32 playerRank = this.GetRank(SoldierName);
                     //int playerRank = 0;
                     result = ListReplace(result, "%playerRank%", playerRank.ToString());
-                    int Rankdif = this.m_dicSession[SoldierName].Rank;
+                    Int32 Rankdif = this.m_dicSession[SoldierName].Rank;
                     Rankdif = Rankdif - playerRank;
                     if (Rankdif == 0)
                     {
@@ -2405,13 +2405,13 @@ namespace PRoConEvents
             }
         }
 
-        private int GetRank(string SoldierName)
+        private Int32 GetRank(String SoldierName)
         {
             //this.DebugInfo("Trace", "GetRank: " + SoldierName);
-            int rank = 0;
+            Int32 rank = 0;
             try
             {
-                string SQL = String.Empty;
+                String SQL = String.Empty;
                 if (m_enRankingByScore == enumBoolYesNo.Yes)
                 {
                     if (this.m_enOverallRanking == enumBoolYesNo.Yes)
@@ -2486,7 +2486,7 @@ namespace PRoConEvents
             return rank;
         }
 
-        public void PluginInfo(string strPlayer)
+        public void PluginInfo(String strPlayer)
         {
             //this.ExecuteCommand("procon.protected.tasks.add", "CChatGUIDStatsLogger","0", "1", "1", "procon.protected.send", "admin.say","This Server running the PRoCon plugin "+this.GetPluginName+" "+this.GetPluginVersion+"running by "+ this.GetPluginAuthor,"player", strPlayer);
         }
@@ -2867,15 +2867,15 @@ namespace PRoConEvents
                 lock (this.welcomestatsDic)
                 {
                     TimeSpan duration = new TimeSpan(0, 10, 0);
-                    List<string> entryToRemove = new List<string>();
-                    foreach (KeyValuePair<string, DateTime> kvp in this.welcomestatsDic)
+                    List<String> entryToRemove = new List<String>();
+                    foreach (KeyValuePair<String, DateTime> kvp in this.welcomestatsDic)
                     {
                         if (duration < (MyDateTime.Now - kvp.Value))
                         {
                             entryToRemove.Add(kvp.Key);
                         }
                     }
-                    foreach (string entry in entryToRemove)
+                    foreach (String entry in entryToRemove)
                     {
                         this.DebugInfo("Trace", "Removing Player " + entry + " from welcomestatslist  Timeoutlimit of 10 minutes was exceeded!");
                         this.welcomestatsDic.Remove(entry);
@@ -2893,7 +2893,7 @@ namespace PRoConEvents
             try
             {
                 this.lstChatFilterRules = new List<Regex>();
-                foreach (string strRule in this.lstStrChatFilterRules)
+                foreach (String strRule in this.lstStrChatFilterRules)
                 {
                     this.lstChatFilterRules.Add(new Regex(strRule.Replace("&#124", "|").Replace("&#124", "+")));
                 }
@@ -2913,19 +2913,19 @@ namespace PRoConEvents
             }
         }
 
-        private void SendMultiLineChatMessage(List<string> lstMultiLineChatMSG, int intDelay, int delayIncreasePerLine, string strScope, string targetPlayerName)
+        private void SendMultiLineChatMessage(List<String> lstMultiLineChatMSG, Int32 intDelay, Int32 delayIncreasePerLine, String strScope, String targetPlayerName)
         {
-            int totalDelay = intDelay;
-            int yellduration = 8;
-            string duration = string.Empty;
-            string yelltagwithduration = @"^\[[y|Y][e|E][l|L]{2,2},\d+\]";
+            Int32 totalDelay = intDelay;
+            Int32 yellduration = 8;
+            String duration = String.Empty;
+            String yelltagwithduration = @"^\[[y|Y][e|E][l|L]{2,2},\d+\]";
             //string yelltag = @"^\[[y|Y][e|E][l|L]{2,2},";
             try
             {
                 switch (strScope)
                 {
                     case "all":
-                        foreach (string line in lstMultiLineChatMSG)
+                        foreach (String line in lstMultiLineChatMSG)
                         {
 
                             if (Regex.IsMatch(line, yelltagwithduration))
@@ -2935,7 +2935,7 @@ namespace PRoConEvents
                                 {
                                     foreach (Capture capture in match.Captures)
                                     {
-                                        if (int.TryParse(Regex.Replace(match.Value, @"\D", ""), out yellduration) == false)
+                                        if (Int32.TryParse(Regex.Replace(match.Value, @"\D", ""), out yellduration) == false)
                                         {
                                             this.DebugInfo("Trace", "SendMultiLineChatMessage: Could not parse Duration, using default");
                                             yellduration = 8;
@@ -2959,7 +2959,7 @@ namespace PRoConEvents
                         break;
 
                     default:
-                        foreach (string line in lstMultiLineChatMSG)
+                        foreach (String line in lstMultiLineChatMSG)
                         {
                             if (Regex.IsMatch(line, yelltagwithduration))
                             {
@@ -2968,7 +2968,7 @@ namespace PRoConEvents
                                 {
                                     foreach (Capture capture in match.Captures)
                                     {
-                                        if (int.TryParse(Regex.Replace(match.Value, @"\D", ""), out yellduration) == false)
+                                        if (Int32.TryParse(Regex.Replace(match.Value, @"\D", ""), out yellduration) == false)
                                         {
                                             this.DebugInfo("Trace", "SendMultiLineChatMessage: Could not parse Duration, using default");
                                             yellduration = 8;
@@ -2999,12 +2999,12 @@ namespace PRoConEvents
             }
         }
 
-        private Dictionary<string, int> GetWeaponMappingfromDB()
+        private Dictionary<String, Int32> GetWeaponMappingfromDB()
         {
-            Dictionary<string, int> mappingDic = new Dictionary<string, int>();
+            Dictionary<String, Int32> mappingDic = new Dictionary<String, Int32>();
             try
             {
-                string sqlSelect = "SELECT `WeaponID`,`Fullname` FROM `" + this.tbl_weapons + @"` WHERE `GameID` = @GameID";
+                String sqlSelect = "SELECT `WeaponID`,`Fullname` FROM `" + this.tbl_weapons + @"` WHERE `GameID` = @GameID";
                 {
                     DataTable result = this.SQLquery(sqlSelect, new { GameID = this.intServerGameType_ID });
                     if (result != null || result.Rows.Count != 0)
