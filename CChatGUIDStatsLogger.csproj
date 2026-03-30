@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Flurl.Http" Version="4.*" />
     <PackageReference Include="MySqlConnector" Version="2.*" />
     <PackageReference Include="Dapper" Version="2.*" />
   </ItemGroup>

@@ -25,6 +25,8 @@ using System.Threading;
 
 using Dapper;
 
+using Flurl.Http;
+
 using MySqlConnector;
 
 using PRoCon.Core;
@@ -2587,36 +2589,33 @@ namespace PRoConEvents
             try
             {
                 this.DebugInfo("Trace", "Thread started and fetching Stats from BFBCS for Players: " + ParameterString);
-                using (WebClient wc = new WebClient())
-                {
-                    //Thx to IIIAVIII
-                    ParameterString = ParameterString.Replace("&", "%26");
-                    ParameterString = ParameterString.Replace(" ", "%20");
-                    ParameterString = ParameterString.Replace("$", "%24");
-                    ParameterString = ParameterString.Replace("+", "%2B");
-                    ParameterString = ParameterString.Replace("/", "%2F");
-                    ParameterString = ParameterString.Replace("?", "%3F");
-                    ParameterString = ParameterString.Replace("%", "%25");
-                    ParameterString = ParameterString.Replace("#", "%23");
-                    //ParameterString = ParameterString.Replace(",","%2C");
-                    ParameterString = ParameterString.Replace(":", "%3A");
-                    ParameterString = ParameterString.Replace(";", "%3B");
-                    ParameterString = ParameterString.Replace("=", "%3D");
-                    ParameterString = ParameterString.Replace("@", "%40");
-                    ParameterString = ParameterString.Replace("<", "%3C");
-                    ParameterString = ParameterString.Replace(">", "%3E");
-                    ParameterString = ParameterString.Replace("{", "%7B");
-                    ParameterString = ParameterString.Replace("}", "%7D");
-                    ParameterString = ParameterString.Replace("|", "%7C");
-                    ParameterString = ParameterString.Replace(@"\", @"%5C");
-                    ParameterString = ParameterString.Replace("^", "%5E");
-                    ParameterString = ParameterString.Replace("~", "%7E");
-                    ParameterString = ParameterString.Replace("[", "%5B");
-                    ParameterString = ParameterString.Replace("]", "%5D");
-                    ParameterString = ParameterString.Replace("`", "%60");
+                //Thx to IIIAVIII
+                ParameterString = ParameterString.Replace("&", "%26");
+                ParameterString = ParameterString.Replace(" ", "%20");
+                ParameterString = ParameterString.Replace("$", "%24");
+                ParameterString = ParameterString.Replace("+", "%2B");
+                ParameterString = ParameterString.Replace("/", "%2F");
+                ParameterString = ParameterString.Replace("?", "%3F");
+                ParameterString = ParameterString.Replace("%", "%25");
+                ParameterString = ParameterString.Replace("#", "%23");
+                //ParameterString = ParameterString.Replace(",","%2C");
+                ParameterString = ParameterString.Replace(":", "%3A");
+                ParameterString = ParameterString.Replace(";", "%3B");
+                ParameterString = ParameterString.Replace("=", "%3D");
+                ParameterString = ParameterString.Replace("@", "%40");
+                ParameterString = ParameterString.Replace("<", "%3C");
+                ParameterString = ParameterString.Replace(">", "%3E");
+                ParameterString = ParameterString.Replace("{", "%7B");
+                ParameterString = ParameterString.Replace("}", "%7D");
+                ParameterString = ParameterString.Replace("|", "%7C");
+                ParameterString = ParameterString.Replace(@"\", @"%5C");
+                ParameterString = ParameterString.Replace("^", "%5E");
+                ParameterString = ParameterString.Replace("~", "%7E");
+                ParameterString = ParameterString.Replace("[", "%5B");
+                ParameterString = ParameterString.Replace("]", "%5D");
+                ParameterString = ParameterString.Replace("`", "%60");
 
-                    result = wc.DownloadString("http://api.bfbcs.com/api/pc?players=" + ParameterString + "&fields=basic");
-                }
+                result = ("http://api.bfbcs.com/api/pc?players=" + ParameterString + "&fields=basic").GetStringAsync().Result;
                 if (result == null || result.StartsWith("{") == false)
                 {
                     this.DebugInfo("Trace", "the String returned by BFBCS was invalid");
@@ -2839,17 +2838,14 @@ namespace PRoConEvents
             try
             {
                 this.DebugInfo("Info", "Thread started and calling the Website:  " + this.m_webAddress);
-                using (WebClient wc = new WebClient())
+                String result = this.m_webAddress.GetStringAsync().Result;
+                if (result.Length > 0)
                 {
-                    string result = wc.DownloadString(this.m_webAddress);
-                    if (result.Length > 0)
-                    {
-                        this.DebugInfo("Info", "Got response from Webserver!");
-                    }
-                    else
-                    {
-                        this.DebugInfo("Warning", "Webrequest: Page(" + this.m_webAddress + ") not found!");
-                    }
+                    this.DebugInfo("Info", "Got response from Webserver!");
+                }
+                else
+                {
+                    this.DebugInfo("Warning", "Webrequest: Page(" + this.m_webAddress + ") not found!");
                 }
             }
             catch (Exception c)
