@@ -24,6 +24,8 @@ using Dapper;
 
 using MySqlConnector;
 
+using PRoCon.Core;
+
 namespace PRoConEvents
 {
     public partial class CChatGUIDStatsLogger
