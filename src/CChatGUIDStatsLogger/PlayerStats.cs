@@ -2994,36 +2994,5 @@ namespace PRoConEvents
                 this.DebugInfo("Error", "Error in PostMultiLineChat: " + c);
             }
         }
-
-        private Dictionary<String, Int32> GetWeaponMappingfromDB()
-        {
-            Dictionary<String, Int32> mappingDic = new Dictionary<String, Int32>();
-            try
-            {
-                String sqlSelect = "SELECT `WeaponID`,`Fullname` FROM `" + this.tbl_weapons + @"` WHERE `GameID` = @GameID";
-                {
-                    DataTable result = this.SQLquery(sqlSelect, new { GameID = this.intServerGameType_ID });
-                    if (result != null || result.Rows.Count != 0)
-                    {
-                        foreach (DataRow row in result.Rows)
-                        {
-                            mappingDic.Add(row["Fullname"].ToString(), Convert.ToInt32(row["WeaponID"]));
-                            this.DebugInfo("Trace", "WeaponMapping: ID: " + Convert.ToInt32(row["WeaponID"]).ToString() + " <--> Weapon:" + row["Fullname"].ToString());
-                        }
-                    }
-                }
-            }
-            catch (MySqlException oe)
-            {
-                this.DebugInfo("Error", "Error in GetWeaponMappingfromDB: ");
-                this.DisplayMySqlErrorCollection(oe);
-            }
-            catch (Exception c)
-            {
-                this.DebugInfo("Error", "Error in GetWeaponMappingfromDB: " + c);
-            }
-
-            return mappingDic;
-        }
     }
 }

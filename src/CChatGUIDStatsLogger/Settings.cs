@@ -567,3 +567,4 @@ namespace PRoConEvents
             this.RegisterAllCommands();
         }
     }
+}
